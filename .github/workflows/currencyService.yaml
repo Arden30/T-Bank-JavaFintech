@@ -1,10 +1,8 @@
-name: Build KudaGo with tests
+name: Build Currency service with tests
 
 on:
   workflow_dispatch:
   pull_request:
-    branches:
-      - main
 
 
 jobs:
@@ -25,21 +23,10 @@ jobs:
 
       # Grant permission to execute the gradlew script
       - name: Grant execute permission for gradlew
-        working-directory: ./KudaGo
+        working-directory: ./CurrencyService
         run: chmod +x ./gradlew
 
       - name: Build with Gradle Wrapper
-        working-directory: ./KudaGo
+        working-directory: ./CurrencyService
         run: ./gradlew build
-
-      - id: jacoco
-        uses: madrapps/jacoco-report@v1.6.1
-        if: ( github.event_name != 'workflow_dispatch' )
-        with:
-          paths: ${{ github.workspace }}/**/build/reports/jacoco/test/jacocoTestReport.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 70
-          min-coverage-changed-files: 70
-          title: Code Coverage
-          update-comment: true
 

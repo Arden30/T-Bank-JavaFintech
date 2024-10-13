@@ -3,6 +3,8 @@ name: Build CustomLinkedList with tests
 on:
   workflow_dispatch:
   pull_request:
+    branches:
+      - main
 
 
 jobs:
