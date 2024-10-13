@@ -1,6 +1,6 @@
 package arden.java.currencyservice.controller;
 
-import arden.java.currencyservice.api.controller.CurrencyController;
+import arden.java.currencyservice.api.controller.CurrencyControllerImpl;
 import arden.java.currencyservice.api.dto.request.CurrencyConvertRequest;
 import arden.java.currencyservice.api.dto.response.CurrencyConvertResponse;
 import arden.java.currencyservice.api.dto.response.CurrencyRateResponse;
@@ -22,8 +22,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest({CurrencyController.class})
-public class CurrencyControllerTest {
+@WebMvcTest({CurrencyControllerImpl.class})
+public class CurrencyControllerImplTest {
     @Autowired
     private MockMvc mockMvc;
     @MockBean
