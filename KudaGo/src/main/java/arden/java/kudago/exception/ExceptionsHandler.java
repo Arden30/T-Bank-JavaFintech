@@ -9,7 +9,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Arrays;
-import java.util.List;
 
 @RestControllerAdvice
 public class ExceptionsHandler {
@@ -58,14 +57,12 @@ public class ExceptionsHandler {
     ) {
         String exceptionName = exception.getClass().getSimpleName();
         String exceptionMessage = exception.getMessage();
-        List<String> stacktrace = Arrays.stream(exception.getStackTrace()).map(StackTraceElement::toString).toList();
 
         return new ApiErrorResponse(
                 description,
                 statusCode.toString(),
                 exceptionName,
-                exceptionMessage,
-                stacktrace
+                exceptionMessage
         );
     }
 }
