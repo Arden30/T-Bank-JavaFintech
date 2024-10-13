@@ -24,7 +24,8 @@ import java.util.Optional;
 public class CurrencyServiceImpl implements CurrencyService {
     private final CurrencyWebClient currencyRateWebClient;
     private final XmlMapper xmlMapper;
-
+    private static final String RUB = "RUB";
+    
     @Override
     public CurrencyRateResponse getCurrencyRate(String code) {
         List<CurrencyRateWithIDResponse> responseList = readAndParseCurrencyRate();
@@ -62,11 +63,8 @@ public class CurrencyServiceImpl implements CurrencyService {
 
             return buildCurrencyConvertResponse(currencyConvertRequest, convertedAmount);
         } else {
-            if (fromCurrency.isEmpty()) {
-                throw new CurrencyException("Валюта не найдена в базе ЦБ: " + currencyConvertRequest.fromCurrency(), HttpStatus.NOT_FOUND);
-            } else {
-                throw new CurrencyException("Валюта не найдена в базе ЦБ: " + currencyConvertRequest.toCurrency(), HttpStatus.NOT_FOUND);
-            }
+            var notFoundCurrency = fromCurrency.isEmpty() ? currencyConvertRequest.fromCurrency() : currencyConvertRequest.toCurrency();
+            throw new CurrencyException("Валюта не найдена в базе ЦБ: " + notFoundCurrency, HttpStatus.NOT_FOUND);
         }
     }
 
@@ -79,11 +77,14 @@ public class CurrencyServiceImpl implements CurrencyService {
     }
 
     private CurrencyConvertResponse convertRub(CurrencyConvertRequest currencyConvertRequest, Optional<CurrencyRateWithIDResponse> fromCurrency, Optional<CurrencyRateWithIDResponse> toCurrency) {
-        if (currencyConvertRequest.fromCurrency().equals("RUB") && currencyConvertRequest.toCurrency().equals("RUB")) {
+        boolean fromCurrencyIsRub = currencyConvertRequest.fromCurrency().equals(RUB);
+        boolean toCurrencyIsRub = currencyConvertRequest.toCurrency().equals(RUB);
+
+        if (fromCurrencyIsRub && toCurrencyIsRub) {
             return buildCurrencyConvertResponse(currencyConvertRequest, currencyConvertRequest.amount());
-        } else if (currencyConvertRequest.fromCurrency().equals("RUB")) {
+        } else if (fromCurrencyIsRub) {
             return convertFromRubCurrency(currencyConvertRequest, toCurrency.get());
-        } else if (currencyConvertRequest.toCurrency().equals("RUB")) {
+        } else if (toCurrencyIsRub) {
             return convertToRubCurrency(currencyConvertRequest, fromCurrency.get());
         }
 
