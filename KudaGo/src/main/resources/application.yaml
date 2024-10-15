@@ -4,3 +4,9 @@ spring:
 
 base-config:
   url: https://kudago.com/public-api/v1.4/
+
+multithreading:
+  fixed-pool-size: 20
+  scheduled-pool-size: 10
+  period-in-seconds: 5
+  delay-in-seconds: 3

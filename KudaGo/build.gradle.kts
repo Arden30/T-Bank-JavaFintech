@@ -12,6 +12,7 @@ val aspectVersion: String by project
 val wiremockTestcontainersVersion: String by project
 val wiremockVersion: String by project
 val testcontainersVersion: String by project
+val googleGuavaVersion: String by project
 
 jacoco {
 	toolVersion = "0.8.12"
@@ -39,6 +40,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-devtools")
 	implementation("org.aspectj:aspectjweaver:${aspectVersion}")
 	implementation("org.aspectj:aspectjrt:${aspectVersion}")
+	implementation("com.google.guava:guava:${googleGuavaVersion}")
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 	annotationProcessor("org.projectlombok:lombok")

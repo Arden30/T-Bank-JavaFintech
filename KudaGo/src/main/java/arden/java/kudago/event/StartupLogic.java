@@ -7,54 +7,128 @@ import arden.java.kudago.dto.Location;
 import arden.java.kudago.exception.GeneralException;
 import arden.java.kudago.repository.StorageRepository;
 import configuration.annotation.logtimexec.LogTimeExec;
-import lombok.RequiredArgsConstructor;
+import jakarta.annotation.PreDestroy;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
-public class StartupLogic {
+@LogTimeExec
+public class StartupLogic implements ApplicationContextAware {
     private final CategoryRestTemplate categoryRestTemplate;
     private final LocationRestTemplate locationRestTemplate;
     private final StorageRepository<Long, Category> categoryRepository;
     private final StorageRepository<String, Location> locationStorage;
+    private final ExecutorService fixedThreadPool;
+    private final ScheduledExecutorService scheduledExecutorService;
+    private final Duration period;
+    private final Duration delay;
+    private ApplicationContext applicationContext;
 
-    @LogTimeExec
-    @EventListener(ApplicationReadyEvent.class)
-    public void startup() {
-        log.info("Starting up, preparing to fill the data sources");
-
-        fillDBWithCategories();
-
-        fillDBWithLocations();
-
-        log.info("Finished startup, sources should be updated now");
+    @Override
+    public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 
-    private void fillDBWithCategories() {
-        if (categoryRestTemplate.getAllCategories().isPresent()) {
-            List<Category> categories = categoryRestTemplate.getAllCategories().get();
+    @Autowired
+    public StartupLogic(CategoryRestTemplate categoryRestTemplate,
+                        LocationRestTemplate locationRestTemplate,
+                        StorageRepository<Long, Category> categoryRepository,
+                        StorageRepository<String, Location> locationStorage,
+                        Duration period,
+                        Duration delay,
+                        @Qualifier("fixedThreadPool") ExecutorService fixedThreadPool,
+                        @Qualifier("scheduledThreadPool") ScheduledExecutorService scheduledExecutorService) {
+        this.categoryRestTemplate = categoryRestTemplate;
+        this.locationRestTemplate = locationRestTemplate;
+        this.categoryRepository = categoryRepository;
+        this.locationStorage = locationStorage;
+        this.fixedThreadPool = fixedThreadPool;
+        this.scheduledExecutorService = scheduledExecutorService;
+        this.period = period;
+        this.delay = delay;
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void startup() {
+        log.info("Starting up, preparing to initialize DB with data");
+        scheduledExecutorService.scheduleAtFixedRate(this::fillDB, delay.toSeconds(), period.toSeconds(), TimeUnit.SECONDS);
+    }
+
+    public void fillDB() {
+        StartupLogic startupLogic = applicationContext.getBean(StartupLogic.class);
+
+        var tasks = List.<Callable<String>>of(
+                startupLogic::fillDBWithLocations,
+                startupLogic::fillDBWithCategories
+        );
+
+        try {
+            fixedThreadPool.invokeAll(tasks);
+        } catch (InterruptedException e) {
+            log.error("Interrupted while filling DB, closing", e);
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public String fillDBWithCategories() {
+        Optional<List<Category>> request = categoryRestTemplate.getAllCategories();
+        if (request.isPresent()) {
+            List<Category> categories = request.get();
             categories.forEach(category -> categoryRepository.create(category.id(), category));
-            log.info("All categories are saved to DB");
+            log.info("All categories are updated and saved to DB");
+
+            return categories.toString();
         } else {
             log.info("Problems with saving categories to DB");
             throw new GeneralException("Categories were not found");
         }
     }
 
-    private void fillDBWithLocations() {
-        if (locationRestTemplate.getLocations().isPresent()) {
-            List<Location> locations = locationRestTemplate.getLocations().get();
+    public String fillDBWithLocations() {
+        Optional<List<Location>> request = locationRestTemplate.getLocations();
+        if (request.isPresent()) {
+            List<Location> locations = request.get();
             locations.forEach(location -> locationStorage.create(location.slug(), location));
-            log.info("All locations are saved to DB");
+            log.info("All locations are updated and saved to DB");
+
+            return locations.toString();
         } else {
             log.error("Problems with saving locations to DB");
             throw new GeneralException("No locations found");
+        }
+    }
+
+    @PreDestroy
+    public void shutdownExecutors() {
+        scheduledExecutorService.shutdown();
+        fixedThreadPool.shutdown();
+        try {
+            if (!scheduledExecutorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduledExecutorService.shutdownNow();
+            }
+            if (!fixedThreadPool.awaitTermination(5, TimeUnit.SECONDS)) {
+                fixedThreadPool.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Shutdown interrupted, closing", e);
         }
     }
 
