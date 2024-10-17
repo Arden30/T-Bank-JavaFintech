@@ -1,6 +1,6 @@
 package arden.java.kudago.controller;
 
-import arden.java.kudago.dto.Category;
+import arden.java.kudago.dto.response.places.Category;
 import arden.java.kudago.service.CategoryService;
 import configuration.annotation.logtimexec.LogTimeExec;
 import lombok.RequiredArgsConstructor;

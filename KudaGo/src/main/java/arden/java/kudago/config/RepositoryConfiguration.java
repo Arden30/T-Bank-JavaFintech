@@ -1,7 +1,7 @@
 package arden.java.kudago.config;
 
-import arden.java.kudago.dto.Category;
-import arden.java.kudago.dto.Location;
+import arden.java.kudago.dto.response.places.Category;
+import arden.java.kudago.dto.response.places.Location;
 import arden.java.kudago.repository.StorageRepository;
 import arden.java.kudago.repository.impl.StorageRepositoryImpl;
 import org.springframework.context.annotation.Bean;

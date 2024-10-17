@@ -1,6 +1,6 @@
 package arden.java.kudago.client;
 
-import arden.java.kudago.dto.Location;
+import arden.java.kudago.dto.response.places.Location;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,7 +28,7 @@ public class LocationRestTemplateTest {
 
     @DynamicPropertySource
     public static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("base-config.url", wiremockServer::getBaseUrl);
+        registry.add("base-config.kuda-go-url", wiremockServer::getBaseUrl);
     }
 
     @Test

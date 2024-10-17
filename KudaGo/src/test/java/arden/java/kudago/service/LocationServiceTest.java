@@ -1,6 +1,6 @@
 package arden.java.kudago.service;
 
-import arden.java.kudago.dto.Location;
+import arden.java.kudago.dto.response.places.Location;
 import arden.java.kudago.exception.CreationObjectException;
 import arden.java.kudago.exception.IdNotFoundException;
 import arden.java.kudago.repository.StorageRepository;

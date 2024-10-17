@@ -4,12 +4,10 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.time.Duration;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.*;
 
 @Configuration
 @RequiredArgsConstructor
@@ -42,5 +40,13 @@ public class ThreadPoolConfiguration {
     @Bean
     public Duration delay() {
         return Duration.ofSeconds(threadsConfig.delayInSeconds());
+    }
+
+    @Bean
+    public Executor taskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setThreadNamePrefix("SuitableEvents-");
+        executor.initialize();
+        return executor;
     }
 }

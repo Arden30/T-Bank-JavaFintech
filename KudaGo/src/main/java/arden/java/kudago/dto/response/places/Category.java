@@ -1,4 +1,4 @@
-package arden.java.kudago.dto;
+package arden.java.kudago.dto.response.places;
 
 public record Category(
         Long id,

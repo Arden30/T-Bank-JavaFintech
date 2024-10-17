@@ -14,7 +14,7 @@ management:
 
 app:
   client:
-    url: https://www.cbr.ru/scriфpts/XML_daily.asp
+    url: https://www.cbr.ru/scripts/XML_daily.asp
 
 resilience4j:
   circuitbreaker:

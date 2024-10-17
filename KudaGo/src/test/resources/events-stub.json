@@ -1,0 +1,62 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/events",
+        "queryParameters": {
+          "expand": {
+            "equalTo": "location"
+          },
+          "actual_since": {
+            "matches": "\\d+"
+          },
+          "actual_until": {
+            "matches": "\\d+"
+          },
+          "fields": {
+            "equalTo": "id,dates,title,slug,description,site_url,price,favorites_count,location"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "results": [
+            {
+              "id": 1,
+              "dates": [
+                {
+                  "start": "1727740800",
+                  "end": "1730419199"
+                }
+              ],
+              "title": "Фестиваль осени",
+              "description": "Какой-то классный фестиваль",
+              "site_url": "https://festival.ru",
+              "price": "400.0",
+              "favorites_count": 30
+            },
+            {
+              "id": 2,
+              "dates": [
+                {
+                  "start": "1727740800",
+                  "end": "1730419099"
+                }
+              ],
+              "title": "Выставка в Эрмитаже",
+              "description": "Крутейшая выставка",
+              "site_url": "https://hermitage.ru",
+              "price": "800.0",
+              "favorites_count": 20
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

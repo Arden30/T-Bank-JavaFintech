@@ -2,16 +2,16 @@ package arden.java.kudago.event;
 
 import arden.java.kudago.client.CategoryRestTemplate;
 import arden.java.kudago.client.LocationRestTemplate;
-import arden.java.kudago.dto.Category;
-import arden.java.kudago.dto.Location;
+import arden.java.kudago.dto.response.places.Category;
+import arden.java.kudago.dto.response.places.Location;
 import arden.java.kudago.exception.GeneralException;
 import arden.java.kudago.repository.StorageRepository;
 import configuration.annotation.logtimexec.LogTimeExec;
 import jakarta.annotation.PreDestroy;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -29,13 +29,16 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 @LogTimeExec
 public class StartupLogic implements ApplicationContextAware {
     private final CategoryRestTemplate categoryRestTemplate;
     private final LocationRestTemplate locationRestTemplate;
     private final StorageRepository<Long, Category> categoryRepository;
     private final StorageRepository<String, Location> locationStorage;
+    @Qualifier("fixedThreadPool")
     private final ExecutorService fixedThreadPool;
+    @Qualifier("scheduledThreadPool")
     private final ScheduledExecutorService scheduledExecutorService;
     private final Duration period;
     private final Duration delay;
@@ -44,25 +47,6 @@ public class StartupLogic implements ApplicationContextAware {
     @Override
     public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-    }
-
-    @Autowired
-    public StartupLogic(CategoryRestTemplate categoryRestTemplate,
-                        LocationRestTemplate locationRestTemplate,
-                        StorageRepository<Long, Category> categoryRepository,
-                        StorageRepository<String, Location> locationStorage,
-                        Duration period,
-                        Duration delay,
-                        @Qualifier("fixedThreadPool") ExecutorService fixedThreadPool,
-                        @Qualifier("scheduledThreadPool") ScheduledExecutorService scheduledExecutorService) {
-        this.categoryRestTemplate = categoryRestTemplate;
-        this.locationRestTemplate = locationRestTemplate;
-        this.categoryRepository = categoryRepository;
-        this.locationStorage = locationStorage;
-        this.fixedThreadPool = fixedThreadPool;
-        this.scheduledExecutorService = scheduledExecutorService;
-        this.period = period;
-        this.delay = delay;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -96,7 +80,7 @@ public class StartupLogic implements ApplicationContextAware {
 
             return categories.toString();
         } else {
-            log.info("Problems with saving categories to DB");
+            log.error("Problems with saving categories to DB");
             throw new GeneralException("Categories were not found");
         }
     }
