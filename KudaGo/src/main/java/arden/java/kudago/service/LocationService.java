@@ -1,6 +1,6 @@
 package arden.java.kudago.service;
 
-import arden.java.kudago.dto.Location;
+import arden.java.kudago.dto.response.places.Location;
 
 import java.util.List;
 

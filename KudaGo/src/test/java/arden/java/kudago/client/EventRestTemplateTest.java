@@ -1,6 +1,6 @@
 package arden.java.kudago.client;
 
-import arden.java.kudago.dto.response.places.Category;
+import arden.java.kudago.dto.response.event.EventResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,13 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
 @Testcontainers
-public class CategoryRestTemplateTest {
+public class EventRestTemplateTest {
     @Autowired
-    private CategoryRestTemplate categoryRestTemplate;
+    private EventRestTemplate eventRestTemplate;
 
     @Container
     public static WireMockContainer wiremockServer = new WireMockContainer("wiremock/wiremock:3.6.0")
-            .withMappingFromResource("kudago-stub.json");
+            .withMappingFromResource("events-stub.json");
 
     @DynamicPropertySource
     public static void configureProperties(DynamicPropertyRegistry registry) {
@@ -32,13 +32,13 @@ public class CategoryRestTemplateTest {
     }
 
     @Test
-    public void testGetAllCategories() {
-        Optional<List<Category>> categories = categoryRestTemplate.getAllCategories();
+    public void testGetAllEvents_SuccessTest() {
+        Optional<List<EventResponse>> events = eventRestTemplate.getEvents(1727740800, 1730419199);
 
         assertAll("Check response",
-                () -> assertThat(categories.isPresent()).isTrue(),
-                () -> assertThat(categories.get().size()).isEqualTo(2),
-                () -> assertThat(categories.get().getFirst().id()).isEqualTo(1L),
-                () -> assertThat(categories.get().getFirst().name()).isEqualTo("Магазин здорового питания"));
+                () -> assertThat(events.isPresent()).isTrue(),
+                () -> assertThat(events.get().size()).isEqualTo(2),
+                () -> assertThat(events.get().getFirst().id()).isEqualTo(1L),
+                () -> assertThat(events.get().getFirst().title()).isEqualTo("Фестиваль осени"));
     }
 }

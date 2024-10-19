@@ -1,6 +1,6 @@
 package arden.java.kudago.service;
 
-import arden.java.kudago.dto.Category;
+import arden.java.kudago.dto.response.places.Category;
 
 import java.util.List;
 

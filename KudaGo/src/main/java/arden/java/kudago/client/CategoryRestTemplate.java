@@ -1,7 +1,7 @@
 package arden.java.kudago.client;
 
 import arden.java.kudago.config.UrlConfig;
-import arden.java.kudago.dto.Category;
+import arden.java.kudago.dto.response.places.Category;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -18,7 +18,7 @@ public class CategoryRestTemplate {
 
     public Optional<List<Category>> getAllCategories() {
         ResponseEntity<List<Category>> response = restTemplate
-                .exchange(urlConfig.url() + "/place-categories",
+                .exchange(urlConfig.kudaGoUrl() + "/place-categories",
                         HttpMethod.GET,
                         null,
                         new ParameterizedTypeReference<>() {

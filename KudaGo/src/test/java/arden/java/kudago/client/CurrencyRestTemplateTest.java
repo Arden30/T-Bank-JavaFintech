@@ -1,6 +1,6 @@
 package arden.java.kudago.client;
 
-import arden.java.kudago.dto.response.places.Category;
+import arden.java.kudago.dto.request.CurrencyConvertRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,7 +10,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.wiremock.integrations.testcontainers.WireMockContainer;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,27 +17,29 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
 @Testcontainers
-public class CategoryRestTemplateTest {
+public class CurrencyRestTemplateTest {
     @Autowired
-    private CategoryRestTemplate categoryRestTemplate;
+    private CurrencyRestTemplate currencyRestTemplate;
 
     @Container
     public static WireMockContainer wiremockServer = new WireMockContainer("wiremock/wiremock:3.6.0")
-            .withMappingFromResource("kudago-stub.json");
+            .withMappingFromResource("currency-stub.json");
 
     @DynamicPropertySource
     public static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("base-config.kuda-go-url", wiremockServer::getBaseUrl);
+        registry.add("base-config.currency-url", wiremockServer::getBaseUrl);
     }
 
     @Test
-    public void testGetAllCategories() {
-        Optional<List<Category>> categories = categoryRestTemplate.getAllCategories();
+    public void testConvertPrice_SuccessTest() {
+        Optional<Double> currency = currencyRestTemplate.convertPrice(CurrencyConvertRequest.builder()
+                .fromCurrency("USD")
+                .toCurrency("RUB")
+                .amount(100D)
+                .build());
 
         assertAll("Check response",
-                () -> assertThat(categories.isPresent()).isTrue(),
-                () -> assertThat(categories.get().size()).isEqualTo(2),
-                () -> assertThat(categories.get().getFirst().id()).isEqualTo(1L),
-                () -> assertThat(categories.get().getFirst().name()).isEqualTo("Магазин здорового питания"));
+                () -> assertThat(currency.isPresent()).isTrue(),
+                () -> assertThat(currency.get()).isEqualTo(10000D));
     }
 }

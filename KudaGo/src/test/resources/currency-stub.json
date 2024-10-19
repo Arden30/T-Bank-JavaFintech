@@ -1,0 +1,26 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "POST",
+        "urlPath": "/convert",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$[?(@.fromCurrency == 'USD' && @.toCurrency == 'RUB' && @.amount == 100)]"
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "fromCurrency": "USD",
+          "toCurrency": "RUB",
+          "convertedAmount": 10000
+        }
+      }
+    }
+  ]
+}

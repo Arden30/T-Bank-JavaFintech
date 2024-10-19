@@ -1,9 +1,9 @@
 name: Build Currency service with tests
 
 on:
-  workflow_dispatch:
   pull_request:
-
+    branches:
+      - no
 
 jobs:
   build:
