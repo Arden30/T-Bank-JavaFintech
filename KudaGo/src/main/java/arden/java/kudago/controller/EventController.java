@@ -1,6 +1,7 @@
 package arden.java.kudago.controller;
 
 import arden.java.kudago.dto.response.event.Event;
+import arden.java.kudago.dto.response.event.EventResponse;
 import arden.java.kudago.service.EventService;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,7 +22,7 @@ import java.util.List;
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class EventController {
-    private final EventService eventService;
+    private final EventService<Mono<List<EventResponse>>, Mono<List<Event>>> eventService;
 
     @Validated
     @GetMapping("/events")
@@ -35,6 +37,6 @@ public class EventController {
 
                                                          @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd")
                                                          LocalDate dateTo) {
-        return ResponseEntity.ok(eventService.getSuitableEvents(budget, currency, dateFrom, dateTo).join());
+        return ResponseEntity.ok(eventService.getSuitableEvents(budget, currency, dateFrom, dateTo).block());
     }
 }

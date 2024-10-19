@@ -3,9 +3,9 @@ package arden.java.kudago.service;
 import arden.java.kudago.client.CurrencyRestTemplate;
 import arden.java.kudago.client.EventRestTemplate;
 import arden.java.kudago.dto.request.CurrencyConvertRequest;
-import arden.java.kudago.dto.response.event.EventResponse;
 import arden.java.kudago.dto.response.event.Event;
-import arden.java.kudago.service.impl.EventServiceImpl;
+import arden.java.kudago.dto.response.event.EventResponse;
+import arden.java.kudago.service.impl.EventServiceReactiveImpl;
 import arden.java.kudago.utils.DateParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,9 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class EventServiceTest {
+public class EventServiceReactiveTest {
     @InjectMocks
-    private EventServiceImpl eventService;
+    private EventServiceReactiveImpl eventService;
 
     @Mock
     private CurrencyRestTemplate currencyRestTemplate;
@@ -42,7 +42,7 @@ public class EventServiceTest {
     @BeforeEach
     void setUp() {
         executorService = Executors.newFixedThreadPool(10);
-        eventService = new EventServiceImpl(eventRestTemplate, currencyRestTemplate, executorService);
+        eventService = new EventServiceReactiveImpl(eventRestTemplate, currencyRestTemplate);
     }
 
     @Test
@@ -79,7 +79,7 @@ public class EventServiceTest {
                 unsuitableEventResponse
         )));
         when(currencyRestTemplate.convertPrice(currencyConvertRequest)).thenReturn(Optional.of(1000D));
-        List<Event> events = eventService.getSuitableEvents(100D, "USD", start, end).join();
+        List<Event> events = eventService.getSuitableEvents(100D, "USD", start, end).block();
 
         assertAll("Check respoonse",
                 () -> assertThat(events.size()).isEqualTo(1),
@@ -110,7 +110,7 @@ public class EventServiceTest {
                 eventResponse
         )));
         when(currencyRestTemplate.convertPrice(currencyConvertRequest)).thenReturn(Optional.of(1000D));
-        List<Event> events = eventService.getSuitableEvents(100D, "USD", null, null).join();
+        List<Event> events = eventService.getSuitableEvents(100D, "USD", null, null).block();
 
         assertAll("Check response",
                 () -> assertThat(events.size()).isEqualTo(1),

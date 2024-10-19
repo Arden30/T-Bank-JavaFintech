@@ -43,6 +43,7 @@ dependencies {
 	implementation("org.aspectj:aspectjweaver:${aspectVersion}")
 	implementation("org.aspectj:aspectjrt:${aspectVersion}")
 	implementation("com.google.guava:guava:${googleGuavaVersion}")
+	implementation ("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${swaggerVersion}")
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")

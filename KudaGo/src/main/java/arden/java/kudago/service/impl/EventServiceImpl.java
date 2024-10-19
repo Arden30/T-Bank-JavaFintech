@@ -7,33 +7,42 @@ import arden.java.kudago.dto.response.event.Event;
 import arden.java.kudago.dto.response.event.EventResponse;
 import arden.java.kudago.exception.GeneralException;
 import arden.java.kudago.service.EventService;
+import arden.java.kudago.utils.DateParser;
+import arden.java.kudago.utils.PriceParser;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
-public class EventServiceImpl implements EventService {
+public class EventServiceImpl implements EventService<List<EventResponse>, CompletableFuture<List<Event>>> {
     private final EventRestTemplate eventRestTemplate;
     private final CurrencyRestTemplate currencyRestTemplate;
 
     @Qualifier("fixedThreadPool")
     private final ExecutorService fixedThreadPool;
+
+    @Override
+    public List<EventResponse> getEvents(LocalDate dateFrom, LocalDate dateTo) {
+        long start = DateParser.toEpochSeconds(Objects.requireNonNullElseGet(dateFrom, LocalDate::now));
+        long end = DateParser.toEpochSeconds(Objects.requireNonNullElseGet(dateTo, () -> LocalDate.now().plusWeeks(1)));
+
+        Optional<List<EventResponse>> events = eventRestTemplate.getEvents(start, end);
+
+        if (events.isPresent()) {
+            return events.get();
+        }
+
+        throw new GeneralException("No events found");
+    }
 
     @Override
     public CompletableFuture<List<Event>> getSuitableEvents(Double budget, String currency, LocalDate dateFrom, LocalDate dateTo) {
@@ -46,7 +55,7 @@ public class EventServiceImpl implements EventService {
 
         return eventsRequest.thenCombine(convertedPrice, (events, price) ->
                 events.stream()
-                        .filter(event -> parseEventPrice(event.price()) <= price)
+                        .filter(event -> PriceParser.parseEventPrice(event.price()) <= price)
                         .sorted(Comparator.comparing(EventResponse::favoritesCount).reversed())
                         .map(event -> Event.builder()
                                 .id(event.id())
@@ -54,11 +63,11 @@ public class EventServiceImpl implements EventService {
                                 .siteUrl(event.siteUrl())
                                 .description(event.description().replace("<p>", "").replace("</p>", ""))
                                 .favoritesCount(event.favoritesCount())
-                                .price(!parseEventPrice(event.price()).equals(0D) ? parseEventPrice(event.price()).toString() : "бесплатно")
+                                .price(!PriceParser.parseEventPrice(event.price()).equals(0D) ? PriceParser.parseEventPrice(event.price()).toString() : "бесплатно")
                                 .dates(event.dates().stream()
                                         .map(date -> Event.ConvertedDates.builder()
-                                                .start(toLocalDate(date.start()))
-                                                .end(toLocalDate(date.end())).build())
+                                                .start(DateParser.toLocalDate(date.start()))
+                                                .end(DateParser.toLocalDate(date.end())).build())
                                         .filter(convertedDates -> {
                                             LocalDate from;
                                             LocalDate to;
@@ -72,38 +81,4 @@ public class EventServiceImpl implements EventService {
                         .toList());
     }
 
-    @Override
-    public List<EventResponse> getEvents(LocalDate dateFrom, LocalDate dateTo) {
-        long start, end;
-        if (dateFrom == null || dateTo == null) {
-            start = toEpochSeconds(LocalDate.now());
-            end = toEpochSeconds(LocalDate.now().plusWeeks(1));
-        } else {
-            start = toEpochSeconds(dateFrom);
-            end = toEpochSeconds(dateTo);
-        }
-
-        Optional<List<EventResponse>> events = eventRestTemplate.getEvents(start, end);
-
-        if (events.isPresent()) {
-            return events.get();
-        }
-
-        throw new GeneralException("No events found");
-    }
-
-    public Double parseEventPrice(String event) {
-        Pattern pattern = Pattern.compile("\\d+");
-        Matcher matcher = pattern.matcher(event);
-
-        return matcher.find() ? Double.parseDouble(matcher.group()) : 0D;
-    }
-
-    public LocalDate toLocalDate(Long date) {
-        return Instant.ofEpochSecond(date).atZone(ZoneOffset.UTC).toLocalDate();
-    }
-
-    public long toEpochSeconds(LocalDate date) {
-        return date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
-    }
 }
