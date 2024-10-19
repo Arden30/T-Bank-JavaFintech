@@ -18,8 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -36,12 +34,8 @@ public class EventServiceReactiveTest {
     @Mock
     private EventRestTemplate eventRestTemplate;
 
-    @Mock
-    private ExecutorService executorService;
-
     @BeforeEach
     void setUp() {
-        executorService = Executors.newFixedThreadPool(10);
         eventService = new EventServiceReactiveImpl(eventRestTemplate, currencyRestTemplate);
     }
 
@@ -81,7 +75,7 @@ public class EventServiceReactiveTest {
         when(currencyRestTemplate.convertPrice(currencyConvertRequest)).thenReturn(Optional.of(1000D));
         List<Event> events = eventService.getSuitableEvents(100D, "USD", start, end).block();
 
-        assertAll("Check respoonse",
+        assertAll("Check response",
                 () -> assertThat(events.size()).isEqualTo(1),
                 () -> assertThat(events.getFirst().id()).isEqualTo(1L));
     }

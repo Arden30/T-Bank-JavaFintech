@@ -11,6 +11,7 @@ multithreading:
   scheduled-pool-size: 10
   period-in-seconds: 5
   delay-in-seconds: 3
+  max-num-of-threads: 3
 
 server:
   port: 8081

@@ -12,6 +12,8 @@ public record ThreadsConfig(
         @NonNull
         Long periodInSeconds,
         @NonNull
-        Long delayInSeconds
+        Long delayInSeconds,
+        @NonNull
+        Integer maxNumOfThreads
 ) {
 }

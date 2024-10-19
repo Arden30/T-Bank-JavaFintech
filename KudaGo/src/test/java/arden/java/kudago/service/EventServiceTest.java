@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -42,7 +43,7 @@ public class EventServiceTest {
     @BeforeEach
     void setUp() {
         executorService = Executors.newFixedThreadPool(10);
-        eventService = new EventServiceImpl(eventRestTemplate, currencyRestTemplate, executorService);
+        eventService = new EventServiceImpl(eventRestTemplate, currencyRestTemplate, new Semaphore(3), executorService);
     }
 
     @Test
@@ -81,7 +82,7 @@ public class EventServiceTest {
         when(currencyRestTemplate.convertPrice(currencyConvertRequest)).thenReturn(Optional.of(1000D));
         List<Event> events = eventService.getSuitableEvents(100D, "USD", start, end).join();
 
-        assertAll("Check respoonse",
+        assertAll("Check response",
                 () -> assertThat(events.size()).isEqualTo(1),
                 () -> assertThat(events.getFirst().id()).isEqualTo(1L));
     }

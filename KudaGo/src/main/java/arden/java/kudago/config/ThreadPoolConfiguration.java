@@ -49,4 +49,9 @@ public class ThreadPoolConfiguration {
         executor.initialize();
         return executor;
     }
+
+    @Bean
+    public Semaphore semaphore() {
+        return new Semaphore(threadsConfig.maxNumOfThreads());
+    }
 }
