@@ -20,7 +20,7 @@ public class ThreadPoolConfiguration {
                 .setNameFormat("Data-processor-%d")
                 .build();
 
-        return Executors.newFixedThreadPool(threadsConfig.fixedPoolSize(), threadFactory);
+        return Executors.newFixedThreadPool(threadsConfig.threadsNum(), threadFactory);
     }
 
     @Bean
@@ -29,7 +29,7 @@ public class ThreadPoolConfiguration {
                 .setNameFormat("Scheduler-%d")
                 .build();
 
-        return Executors.newScheduledThreadPool(threadsConfig.scheduledPoolSize(), threadFactory);
+        return Executors.newScheduledThreadPool(threadsConfig.threadsNum(), threadFactory);
     }
 
     @Bean

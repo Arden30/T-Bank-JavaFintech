@@ -6,9 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "multithreading")
 public record ThreadsConfig(
         @NonNull
-        Integer fixedPoolSize,
-        @NonNull
-        Integer scheduledPoolSize,
+        Integer threadsNum,
         @NonNull
         Long periodInSeconds,
         @NonNull

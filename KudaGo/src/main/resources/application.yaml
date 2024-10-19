@@ -7,10 +7,9 @@ base-config:
   currency-url: http://localhost:8080/api/v1/currencies
 
 multithreading:
-  fixed-pool-size: 20
-  scheduled-pool-size: 10
+  threads-num: 1
   period-in-seconds: 5
-  delay-in-seconds: 3
+  delay-in-seconds: 0
   max-num-of-threads: 3
 
 server:
