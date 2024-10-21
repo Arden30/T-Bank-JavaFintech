@@ -1,4 +1,4 @@
-package arden.java.kudago.event;
+package arden.java.kudago.start;
 
 import arden.java.kudago.client.CategoryRestTemplate;
 import arden.java.kudago.client.LocationRestTemplate;
