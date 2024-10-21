@@ -11,6 +11,22 @@ spring:
   liquibase:
     enabled: true
     change-log: db/changelog/changelog-master.yaml
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        session:
+          events:
+            log:
+              LOG_QUERIES_SLOWER_THAN_MS: 25
+        show_sql: true
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: warn
 
 base-config:
   kuda-go-url: https://kudago.com/public-api/v1.4/
