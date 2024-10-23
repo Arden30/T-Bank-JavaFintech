@@ -1,13 +1,14 @@
 package arden.java.kudago.repository.impl;
 
 import arden.java.kudago.repository.StorageRepository;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Repository
+@Component
 public class StorageRepositoryImpl<K, V> implements StorageRepository<K, V> {
     private final Map<K, V> storage = new ConcurrentHashMap<>();
 

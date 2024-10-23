@@ -1,17 +1,17 @@
 package arden.java.kudago.service;
 
-import arden.java.kudago.dto.response.places.Location;
+import arden.java.kudago.dto.response.places.LocationResponse;
 
 import java.util.List;
 
 public interface LocationService {
-    List<Location> getAllLocations();
+    List<LocationResponse> getAllLocations();
 
-    Location getLocationBySlug(String slug);
+    LocationResponse getLocationById(Long id);
 
-    Location createLocation(Location Location);
+    LocationResponse createLocation(LocationResponse LocationResponse);
 
-    Location updateLocation(String slug, Location Location);
+    LocationResponse updateLocation(Long id, LocationResponse locationResponse);
 
-    boolean deleteLocation(String slug);
+    void deleteLocation(Long id);
 }

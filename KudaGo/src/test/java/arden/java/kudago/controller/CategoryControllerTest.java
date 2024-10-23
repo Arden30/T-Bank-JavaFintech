@@ -1,6 +1,6 @@
 package arden.java.kudago.controller;
 
-import arden.java.kudago.dto.response.places.Category;
+import arden.java.kudago.dto.response.places.CategoryResponse;
 import arden.java.kudago.exception.CreationObjectException;
 import arden.java.kudago.exception.IdNotFoundException;
 import arden.java.kudago.service.CategoryService;
@@ -38,9 +38,9 @@ public class CategoryControllerTest {
 
     @Test
     void testGetCategoriesSuccess() throws Exception {
-        List<Category> categories = List.of(
-                new Category(1L, "cafe", "Кафе быстрого питания"),
-                new Category(2L, "shop", "Магазин одежды")
+        List<CategoryResponse> categories = List.of(
+                new CategoryResponse(1L, "cafe", "Кафе быстрого питания"),
+                new CategoryResponse(2L, "shop", "Магазин одежды")
         );
 
         when(categoryService.getAllCategories()).thenReturn(categories);
@@ -54,8 +54,8 @@ public class CategoryControllerTest {
 
     @Test
     void testGetCategoryByIdSuccess() throws Exception {
-        Category category = new Category(1L, "cafe", "Кафе быстрого питания");
-        when(categoryService.getCategoryById(1L)).thenReturn(category);
+        CategoryResponse categoryResponse = new CategoryResponse(1L, "cafe", "Кафе быстрого питания");
+        when(categoryService.getCategoryById(1L)).thenReturn(categoryResponse);
 
         mockMvc.perform(get("/api/v1/places/categories/1"))
                 .andExpect(status().isOk())
@@ -73,14 +73,14 @@ public class CategoryControllerTest {
 
     @Test
     void testCreateCategorySuccess() throws Exception {
-        Category newCategory = new Category(null, "museum", "Музей воды");
-        Category createdCategory = new Category(1L, "museum", "Музей воды");
+        CategoryResponse newCategoryResponse = new CategoryResponse(null, "museum", "Музей воды");
+        CategoryResponse createdCategoryResponse = new CategoryResponse(1L, "museum", "Музей воды");
 
-        when(categoryService.createCategory(any(Category.class))).thenReturn(createdCategory);
+        when(categoryService.createCategory(any(CategoryResponse.class))).thenReturn(createdCategoryResponse);
 
         mockMvc.perform(post("/api/v1/places/categories")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newCategory)))
+                        .content(objectMapper.writeValueAsString(newCategoryResponse)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1))
@@ -89,24 +89,24 @@ public class CategoryControllerTest {
 
     @Test
     void testCreateCategoryInvalidData() throws Exception {
-        Category invalidCategory = new Category(null, "", "");
-        when(categoryService.createCategory(any(Category.class))).thenThrow(new CreationObjectException("Can't create an object"));
+        CategoryResponse invalidCategoryResponse = new CategoryResponse(null, "", "");
+        when(categoryService.createCategory(any(CategoryResponse.class))).thenThrow(new CreationObjectException("Can't create an object"));
 
         mockMvc.perform(post("/api/v1/places/categories")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidCategory)))
+                        .content(objectMapper.writeValueAsString(invalidCategoryResponse)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void testUpdateCategorySuccess() throws Exception {
-        Category updatedCategory = new Category(1L, "restaurant", "Restaurant");
+        CategoryResponse updatedCategoryResponse = new CategoryResponse(1L, "restaurant", "Restaurant");
 
-        when(categoryService.updateCategory(anyLong(), any(Category.class))).thenReturn(updatedCategory);
+        when(categoryService.updateCategory(anyLong(), any(CategoryResponse.class))).thenReturn(updatedCategoryResponse);
 
         mockMvc.perform(put("/api/v1/places/categories/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedCategory)))
+                        .content(objectMapper.writeValueAsString(updatedCategoryResponse)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.slug").value("restaurant"));
@@ -114,12 +114,12 @@ public class CategoryControllerTest {
 
     @Test
     void testUpdateCategoryNotFound() throws Exception {
-        when(categoryService.updateCategory(anyLong(), any(Category.class)))
+        when(categoryService.updateCategory(anyLong(), any(CategoryResponse.class)))
                 .thenThrow(new IdNotFoundException("Category not found"));
 
         mockMvc.perform(put("/api/v1/places/categories/999")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new Category(999L, "unknown", "Unknown"))))
+                        .content(objectMapper.writeValueAsString(new CategoryResponse(999L, "unknown", "Unknown"))))
                 .andExpect(status().isNotFound());
     }
 

@@ -1,6 +1,6 @@
 package arden.java.kudago.repository;
 
-import arden.java.kudago.dto.response.places.Location;
+import arden.java.kudago.model.Location;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

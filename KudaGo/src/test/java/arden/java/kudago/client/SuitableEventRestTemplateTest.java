@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
 @Testcontainers
-public class EventRestTemplateTest {
+public class SuitableEventRestTemplateTest {
     @Autowired
     private EventRestTemplate eventRestTemplate;
 

@@ -9,7 +9,7 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
   liquibase:
-    enabled: true
+    enabled: false
     change-log: db/changelog/changelog-master.yaml
   jpa:
     hibernate:

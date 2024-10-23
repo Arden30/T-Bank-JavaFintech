@@ -2,8 +2,8 @@ package arden.java.kudago.start;
 
 import arden.java.kudago.client.CategoryRestTemplate;
 import arden.java.kudago.client.LocationRestTemplate;
-import arden.java.kudago.dto.response.places.Category;
-import arden.java.kudago.dto.response.places.Location;
+import arden.java.kudago.dto.response.places.CategoryResponse;
+import arden.java.kudago.dto.response.places.LocationResponse;
 import arden.java.kudago.exception.GeneralException;
 import arden.java.kudago.repository.StorageRepository;
 import configuration.annotation.logtimexec.LogTimeExec;
@@ -34,8 +34,8 @@ import java.util.concurrent.TimeUnit;
 public class StartupLogic implements ApplicationContextAware {
     private final CategoryRestTemplate categoryRestTemplate;
     private final LocationRestTemplate locationRestTemplate;
-    private final StorageRepository<Long, Category> categoryRepository;
-    private final StorageRepository<String, Location> locationStorage;
+    private final StorageRepository<Long, CategoryResponse> categoryRepository;
+    private final StorageRepository<String, LocationResponse> locationStorage;
     @Qualifier("fixedThreadPool")
     private final ExecutorService fixedThreadPool;
     @Qualifier("scheduledThreadPool")
@@ -72,9 +72,9 @@ public class StartupLogic implements ApplicationContextAware {
     }
 
     public String fillDBWithCategories() {
-        Optional<List<Category>> request = categoryRestTemplate.getAllCategories();
+        Optional<List<CategoryResponse>> request = categoryRestTemplate.getAllCategories();
         if (request.isPresent()) {
-            List<Category> categories = request.get();
+            List<CategoryResponse> categories = request.get();
             categories.forEach(category -> categoryRepository.create(category.id(), category));
             log.info("All categories are updated and saved to DB");
 
@@ -86,13 +86,13 @@ public class StartupLogic implements ApplicationContextAware {
     }
 
     public String fillDBWithLocations() {
-        Optional<List<Location>> request = locationRestTemplate.getLocations();
+        Optional<List<LocationResponse>> request = locationRestTemplate.getLocations();
         if (request.isPresent()) {
-            List<Location> locations = request.get();
-            locations.forEach(location -> locationStorage.create(location.slug(), location));
+            List<LocationResponse> locationResponses = request.get();
+            locationResponses.forEach(location -> locationStorage.create(location.slug(), location));
             log.info("All locations are updated and saved to DB");
 
-            return locations.toString();
+            return locationResponses.toString();
         } else {
             log.error("Problems with saving locations to DB");
             throw new GeneralException("No locations found");

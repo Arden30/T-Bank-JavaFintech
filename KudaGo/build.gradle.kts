@@ -52,9 +52,12 @@ dependencies {
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 	testImplementation("org.wiremock:wiremock-standalone:${wiremockVersion}")
 	testImplementation("org.wiremock.integrations.testcontainers:wiremock-testcontainers-module:${wiremockTestcontainersVersion}")
 	testImplementation("org.testcontainers:junit-jupiter:${testcontainersVersion}")
+	testImplementation("org.testcontainers:postgresql")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

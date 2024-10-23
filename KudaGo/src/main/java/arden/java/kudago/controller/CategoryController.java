@@ -1,6 +1,6 @@
 package arden.java.kudago.controller;
 
-import arden.java.kudago.dto.response.places.Category;
+import arden.java.kudago.dto.response.places.CategoryResponse;
 import arden.java.kudago.service.CategoryService;
 import configuration.annotation.logtimexec.LogTimeExec;
 import lombok.RequiredArgsConstructor;
@@ -17,23 +17,23 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public ResponseEntity<List<Category>> getCategories() {
+    public ResponseEntity<List<CategoryResponse>> getCategories() {
         return ResponseEntity.ok(categoryService.getAllCategories());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getCategory(@PathVariable Long id) {
+    public ResponseEntity<CategoryResponse> getCategory(@PathVariable Long id) {
         return ResponseEntity.ok(categoryService.getCategoryById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
-        return ResponseEntity.ok(categoryService.createCategory(category));
+    public ResponseEntity<CategoryResponse> createCategory(@RequestBody CategoryResponse categoryResponse) {
+        return ResponseEntity.ok(categoryService.createCategory(categoryResponse));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category category) {
-        return ResponseEntity.ok(categoryService.updateCategory(id, category));
+    public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id, @RequestBody CategoryResponse categoryResponse) {
+        return ResponseEntity.ok(categoryService.updateCategory(id, categoryResponse));
     }
 
     @DeleteMapping("/{id}")

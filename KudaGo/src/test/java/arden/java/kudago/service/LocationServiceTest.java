@@ -1,9 +1,9 @@
 package arden.java.kudago.service;
 
-import arden.java.kudago.dto.response.places.Location;
-import arden.java.kudago.exception.CreationObjectException;
+import arden.java.kudago.dto.response.places.LocationResponse;
 import arden.java.kudago.exception.IdNotFoundException;
-import arden.java.kudago.repository.StorageRepository;
+import arden.java.kudago.model.Location;
+import arden.java.kudago.repository.LocationRepository;
 import arden.java.kudago.service.impl.LocationServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,113 +14,102 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class LocationServiceTest {
     @Mock
-    private StorageRepository<String, Location> storage;
+    private LocationRepository locationRepository;
     @InjectMocks
     private LocationServiceImpl locationService;
 
-    private final List<Location> locationsList = List.of(
-            new Location("shop", "Магазин здорового питания"),
-            new Location("cafe", "Кафе быстрого питания")
+    private final List<Optional<Location>> locations = List.of(
+            Optional.of(new Location(1L, "Магазин здорового питания", "shop", null)),
+            Optional.of(new Location(2L, "Кафе быстрого питания", "cafe", null))
+    );
+
+    private final List<LocationResponse> locationsList = List.of(
+            new LocationResponse("shop", "Магазин здорового питания"),
+            new LocationResponse("cafe", "Кафе быстрого питания")
     );
 
     @Test
     @DisplayName("Getting all locations: success test")
     public void getAllLocations_successTest() {
         //Arrange
-        when(storage.readAll()).thenReturn(locationsList);
+        when(locationRepository.findAll()).thenReturn(locations.stream().map(location -> location.get()).toList());
 
         //Act
-        List<Location> locations = locationService.getAllLocations();
+        List<LocationResponse> locationResponses = locationService.getAllLocations();
 
         //Assert
-        assertThat(locations).isEqualTo(locationsList);
+        assertThat(locationResponses).isEqualTo(locationsList);
     }
 
     @Test
     @DisplayName("Getting all locations: fail test")
     public void getAllLocations_failTest() {
-        when(storage.readAll()).thenReturn(Collections.emptyList());
+        when(locationRepository.findAll()).thenReturn(Collections.emptyList());
 
-        List<Location> locations = locationService.getAllLocations();
+        List<LocationResponse> locationResponses = locationService.getAllLocations();
 
-        assertThat(Collections.emptyList()).isEqualTo(locations);
+        assertThat(Collections.emptyList()).isEqualTo(locationResponses);
     }
 
     @Test
     @DisplayName("Getting Location by id: success test")
     public void getLocationBySlug_successTest() {
-        when(storage.read("shop")).thenReturn(locationsList.getFirst());
+        when(locationRepository.findById(1L)).thenReturn(locations.getFirst());
 
-        Location Location = locationService.getLocationBySlug("shop");
+        LocationResponse LocationResponse = locationService.getLocationById(1L);
 
-        assertThat(Location).isEqualTo(locationsList.getFirst());
+        assertThat(LocationResponse).isEqualTo(locationsList.getFirst());
     }
 
     @Test
     @DisplayName("Getting Location by id: fail test")
     public void getLocationBySlug_failTest() {
-        when(storage.read("shop")).thenReturn(null);
+        when(locationRepository.findById(1L)).thenThrow(new IdNotFoundException("id not found"));
 
-        assertThrows(IdNotFoundException.class, () -> locationService.getLocationBySlug("shop"));
+        assertThrows(IdNotFoundException.class, () -> locationService.getLocationById(1L));
     }
 
     @Test
     @DisplayName("Create new Location: success test")
     public void createLocation_successTest() {
-        when(storage.create("shop", locationsList.getFirst())).thenReturn(locationsList.getFirst());
+        when(locationRepository.save(any(Location.class))).thenReturn(locations.getFirst().get());
 
-        Location Location = locationService.createLocation(locationsList.getFirst());
+        LocationResponse LocationResponse = locationService.createLocation(locationsList.getFirst());
 
-        assertThat(Location).isEqualTo(locationsList.getFirst());
-    }
-
-    @Test
-    @DisplayName("Create new Location: fail test")
-    public void createLocation_failTest() {
-        when(storage.create("shop", locationsList.getFirst())).thenReturn(null);
-
-        assertThrows(CreationObjectException.class, () -> locationService.createLocation(locationsList.getFirst()));
+        assertThat(LocationResponse).isEqualTo(locationsList.getFirst());
     }
 
     @Test
     @DisplayName("Update Location: success test")
     public void updateLocation_successTest() {
-        when(storage.update("shop", locationsList.getLast())).thenReturn(locationsList.getLast());
-        when(storage.read("shop")).thenReturn(locationsList.getFirst());
+        when(locationRepository.save(any(Location.class))).thenReturn(locations.getLast().get());
+        when(locationRepository.findById(1L)).thenReturn(locations.getFirst());
 
-        Location Location = locationService.updateLocation("shop", locationsList.getLast());
+        LocationResponse LocationResponse = locationService.updateLocation(1L, locationsList.getLast());
 
-        assertThat(Location).isEqualTo(locationsList.getLast());
+        assertThat(LocationResponse).isEqualTo(locationsList.getLast());
     }
 
     @Test
     @DisplayName("Update Location: fail test")
     public void updateLocation_failTest() {
-        assertThrows(IdNotFoundException.class, () -> locationService.updateLocation("shop", locationsList.getLast()));
+        assertThrows(IdNotFoundException.class, () -> locationService.updateLocation(2L, locationsList.getLast()));
     }
 
     @Test
     @DisplayName("Delete Location: success test")
     public void deleteLocation_successTest() {
-        when(storage.read("shop")).thenReturn(locationsList.getFirst());
-        when(storage.delete("shop")).thenReturn(true);
-
-        boolean isDeleted = locationService.deleteLocation("shop");
-
-        assertThat(isDeleted).isTrue();
-    }
-
-    @Test
-    @DisplayName("Delete Location: fail test")
-    public void deleteLocation_failTest() {
-        assertThrows(IdNotFoundException.class, () -> locationService.deleteLocation(locationsList.getFirst().slug()));
+        assertDoesNotThrow(() -> locationService.deleteLocation(locations.getFirst().get().getId()));
     }
 }

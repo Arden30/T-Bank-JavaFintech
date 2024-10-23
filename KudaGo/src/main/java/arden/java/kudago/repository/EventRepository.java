@@ -8,11 +8,10 @@ import org.springframework.stereotype.Repository;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long> {
-    Set<Event> findAll(Specification<Event> spec);
+    List<Event> findAll(Specification<Event> spec);
 
     static Specification<Event> buildSpecification(String name, String location, OffsetDateTime fromDate, OffsetDateTime toDate) {
         List<Specification<Event>> specs = new ArrayList<>();
@@ -24,12 +23,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             specs.add((Specification<Event>) (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.<String>get("location").get("name"), location));
         }
 
-        if (fromDate != null) {
-            specs.add((Specification<Event>) (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.<String>get("fromDate"), fromDate));
-        }
-
-        if (toDate != null) {
-            specs.add((Specification<Event>) (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.<String>get("toDate"), toDate));
+        if (fromDate != null && toDate != null) {
+            specs.add((Specification<Event>) (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("date"), fromDate, toDate));
         }
 
         return specs.stream().reduce(Specification::and).orElse(null);

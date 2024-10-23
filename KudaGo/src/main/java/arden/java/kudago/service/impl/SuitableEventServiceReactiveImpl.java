@@ -3,10 +3,10 @@ package arden.java.kudago.service.impl;
 import arden.java.kudago.client.CurrencyRestTemplate;
 import arden.java.kudago.client.EventRestTemplate;
 import arden.java.kudago.dto.request.CurrencyConvertRequest;
-import arden.java.kudago.dto.response.event.Event;
+import arden.java.kudago.dto.response.event.SuitableEvent;
 import arden.java.kudago.dto.response.event.EventResponse;
 import arden.java.kudago.exception.GeneralException;
-import arden.java.kudago.service.EventService;
+import arden.java.kudago.service.SuitableEventService;
 import arden.java.kudago.utils.DateParser;
 import arden.java.kudago.utils.PriceParser;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class EventServiceReactiveImpl implements EventService<Mono<List<EventResponse>>, Mono<List<Event>>> {
+public class SuitableEventServiceReactiveImpl implements SuitableEventService<Mono<List<EventResponse>>, Mono<List<SuitableEvent>>> {
     private final EventRestTemplate eventRestTemplate;
     private final CurrencyRestTemplate currencyRestTemplate;
 
@@ -41,7 +41,7 @@ public class EventServiceReactiveImpl implements EventService<Mono<List<EventRes
     }
 
     @Override
-    public Mono<List<Event>> getSuitableEvents(Double budget, String currency, LocalDate dateFrom, LocalDate dateTo) {
+    public Mono<List<SuitableEvent>> getSuitableEvents(Double budget, String currency, LocalDate dateFrom, LocalDate dateTo) {
         Mono<List<EventResponse>> eventsMono = getEvents(dateFrom, dateTo);
         Mono<Double> convertedPriceMono = Mono.just(currencyRestTemplate.convertPrice(CurrencyConvertRequest.builder()
                         .fromCurrency(currency)
@@ -58,7 +58,7 @@ public class EventServiceReactiveImpl implements EventService<Mono<List<EventRes
                     return Flux.fromIterable(events)
                             .filter(event -> PriceParser.parseEventPrice(event.price()) <= price)
                             .sort(Comparator.comparing(EventResponse::favoritesCount).reversed())
-                            .map(event -> Event.builder()
+                            .map(event -> SuitableEvent.builder()
                                     .id(event.id())
                                     .title(event.title())
                                     .siteUrl(event.siteUrl())
@@ -66,7 +66,7 @@ public class EventServiceReactiveImpl implements EventService<Mono<List<EventRes
                                     .favoritesCount(event.favoritesCount())
                                     .price(!PriceParser.parseEventPrice(event.price()).equals(0D) ? PriceParser.parseEventPrice(event.price()).toString() : "бесплатно")
                                     .dates(event.dates().stream()
-                                            .map(date -> Event.ConvertedDates.builder()
+                                            .map(date -> SuitableEvent.ConvertedDates.builder()
                                                     .start(DateParser.toLocalDate(date.start()))
                                                     .end(DateParser.toLocalDate(date.end())).build())
                                             .filter(convertedDates -> {
