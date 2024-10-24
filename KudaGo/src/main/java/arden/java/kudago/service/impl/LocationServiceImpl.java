@@ -1,6 +1,6 @@
 package arden.java.kudago.service.impl;
 
-import arden.java.kudago.dto.response.places.LocationResponse;
+import arden.java.kudago.dto.response.places.LocationDto;
 import arden.java.kudago.exception.IdNotFoundException;
 import arden.java.kudago.model.Location;
 import arden.java.kudago.repository.LocationRepository;
@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,29 +18,32 @@ public class LocationServiceImpl implements LocationService {
     private final LocationRepository locationRepository;
 
     @Override
-    public List<LocationResponse> getAllLocations() {
+    public List<LocationDto> getAllLocations() {
         return locationRepository.findAll().stream()
                 .map(this::createResponseFromLocation)
                 .toList();
     }
 
     @Override
-    public LocationResponse getLocationById(Long id) {
-        return createResponseFromLocation(locationRepository.findById(id)
+    public LocationDto getLocationById(Long id) {
+        return createResponseFromLocation(locationRepository.findByIdEager(id)
                 .orElseThrow(() -> new IdNotFoundException("Location with id '" + id + "' not found")));
     }
 
     @Override
-    public LocationResponse createLocation(LocationResponse locationResponse) {
-        return createResponseFromLocation(locationRepository.save(createLocationFromResponse(locationResponse)));
+    public LocationDto createLocation(LocationDto locationDto) {
+        return createResponseFromLocation(locationRepository.save(createLocationFromResponse(locationDto)));
     }
 
     @Override
-    public LocationResponse updateLocation(Long id, LocationResponse locationResponse) {
-        Optional<Location> location = locationRepository.findById(id);
-        if (location.isPresent()) {
-            return createResponseFromLocation(locationRepository.save(createLocationFromResponse(locationResponse)));
-        } else throw new IdNotFoundException("Location with id '" + id + "' not found");
+    public LocationDto updateLocation(Long id, LocationDto locationDto) {
+        Location existingLocation = locationRepository.findByIdEager(id)
+                .orElseThrow(() -> new IdNotFoundException("Location with id '" + id + "' not found"));
+
+        existingLocation.setName(locationDto.name());
+        existingLocation.setSlug(locationDto.slug());
+
+        return createResponseFromLocation(locationRepository.save(existingLocation));
     }
 
     @Override
@@ -49,14 +51,14 @@ public class LocationServiceImpl implements LocationService {
         locationRepository.deleteById(id);
     }
 
-    private LocationResponse createResponseFromLocation(Location location) {
-        return new LocationResponse(location.getSlug(), location.getName());
+    private LocationDto createResponseFromLocation(Location location) {
+        return new LocationDto(location.getSlug(), location.getName());
     }
 
-    private Location createLocationFromResponse(LocationResponse locationResponse) {
+    private Location createLocationFromResponse(LocationDto locationDto) {
         Location location = new Location();
-        location.setName(locationResponse.name());
-        location.setSlug(locationResponse.slug());
+        location.setName(locationDto.name());
+        location.setSlug(locationDto.slug());
 
         return location;
     }

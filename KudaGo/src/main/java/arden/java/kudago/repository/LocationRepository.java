@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Long> {
-    @Query("FROM Location l JOIN FETCH l.events WHERE l.id = :id")
-    Optional<Location> findById(Long id);
+    @Query("FROM Location l LEFT JOIN FETCH l.events WHERE l.id = :id")
+    Optional<Location> findByIdEager(Long id);
 }

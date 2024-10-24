@@ -1,6 +1,6 @@
 package arden.java.kudago.client;
 
-import arden.java.kudago.dto.response.places.LocationResponse;
+import arden.java.kudago.dto.response.places.LocationDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,7 +33,7 @@ public class LocationRestTemplateTest {
 
     @Test
     public void testGetAllLocations() {
-        Optional<List<LocationResponse>> locations = locationRestTemplate.getLocations();
+        Optional<List<LocationDto>> locations = locationRestTemplate.getLocations();
 
         assertAll("Check response",
                 () -> assertThat(locations.isPresent()).isTrue(),

@@ -4,13 +4,13 @@ import arden.java.kudago.dto.response.event.EventDto;
 import arden.java.kudago.exception.IdNotFoundException;
 import arden.java.kudago.model.Event;
 import arden.java.kudago.repository.EventRepository;
+import arden.java.kudago.repository.LocationRepository;
 import arden.java.kudago.service.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,10 +44,14 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventDto updateEvent(Long id, EventDto eventDto) {
-        Optional<Event> event = eventRepository.findById(id);
-        if (event.isPresent()) {
-            return createResponseFromEvent(eventRepository.save(createEventFromResponse(eventDto)));
-        } else throw new IdNotFoundException("Event with id '" + id + "' not found");
+        Event existingEvent = eventRepository.findById(id)
+                .orElseThrow(() -> new IdNotFoundException("Event with id '" + id + "' not found"));
+
+        existingEvent.setName(eventDto.name());
+        existingEvent.setDate(eventDto.date());
+        existingEvent.setLocation(eventDto.location());
+
+        return createResponseFromEvent(eventRepository.save(existingEvent));
     }
 
     @Override

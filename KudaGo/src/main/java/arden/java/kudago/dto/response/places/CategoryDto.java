@@ -1,6 +1,6 @@
 package arden.java.kudago.dto.response.places;
 
-public record CategoryResponse(
+public record CategoryDto(
         Long id,
         String slug,
         String name

@@ -2,7 +2,6 @@ package arden.java.kudago.repository.impl;
 
 import arden.java.kudago.repository.StorageRepository;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;

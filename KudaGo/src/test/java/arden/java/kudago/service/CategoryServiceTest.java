@@ -1,6 +1,6 @@
 package arden.java.kudago.service;
 
-import arden.java.kudago.dto.response.places.CategoryResponse;
+import arden.java.kudago.dto.response.places.CategoryDto;
 import arden.java.kudago.exception.CreationObjectException;
 import arden.java.kudago.exception.IdNotFoundException;
 import arden.java.kudago.repository.StorageRepository;
@@ -22,13 +22,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class CategoryServiceTest {
     @Mock
-    private StorageRepository<Long, CategoryResponse> storage;
+    private StorageRepository<Long, CategoryDto> storage;
     @InjectMocks
     private CategoryServiceImpl categoryService;
 
-    private final List<CategoryResponse> categoriesList = List.of(
-            new CategoryResponse(1L, "shop", "Магазин здорового питания"),
-            new CategoryResponse(2L, "cafe", "Кафе быстрого питания")
+    private final List<CategoryDto> categoriesList = List.of(
+            new CategoryDto(1L, "shop", "Магазин здорового питания"),
+            new CategoryDto(2L, "cafe", "Кафе быстрого питания")
     );
 
     @Test
@@ -38,7 +38,7 @@ public class CategoryServiceTest {
         when(storage.readAll()).thenReturn(categoriesList);
 
         //Act
-        List<CategoryResponse> categories = categoryService.getAllCategories();
+        List<CategoryDto> categories = categoryService.getAllCategories();
 
         //Assert
         assertThat(categories).isEqualTo(categoriesList);
@@ -49,7 +49,7 @@ public class CategoryServiceTest {
     public void getAllCategories_failTest() {
         when(storage.readAll()).thenReturn(Collections.emptyList());
 
-        List<CategoryResponse> categories = categoryService.getAllCategories();
+        List<CategoryDto> categories = categoryService.getAllCategories();
 
         assertThat(Collections.emptyList()).isEqualTo(categories);
     }
@@ -59,9 +59,9 @@ public class CategoryServiceTest {
     public void getCategoryById_successTest() {
         when(storage.read(1L)).thenReturn(categoriesList.getFirst());
 
-        CategoryResponse categoryResponse = categoryService.getCategoryById(1L);
+        CategoryDto categoryDto = categoryService.getCategoryById(1L);
 
-        assertThat(categoryResponse).isEqualTo(categoriesList.getFirst());
+        assertThat(categoryDto).isEqualTo(categoriesList.getFirst());
     }
 
     @Test
@@ -77,9 +77,9 @@ public class CategoryServiceTest {
     public void createCategory_successTest() {
         when(storage.create(1L, categoriesList.getFirst())).thenReturn(categoriesList.getFirst());
 
-        CategoryResponse categoryResponse = categoryService.createCategory(categoriesList.getFirst());
+        CategoryDto categoryDto = categoryService.createCategory(categoriesList.getFirst());
 
-        assertThat(categoryResponse).isEqualTo(categoriesList.getFirst());
+        assertThat(categoryDto).isEqualTo(categoriesList.getFirst());
     }
 
     @Test
@@ -96,9 +96,9 @@ public class CategoryServiceTest {
         when(storage.update(1L, categoriesList.getLast())).thenReturn(categoriesList.getLast());
         when(storage.read(1L)).thenReturn(categoriesList.getFirst());
 
-        CategoryResponse categoryResponse = categoryService.updateCategory(1L, categoriesList.getLast());
+        CategoryDto categoryDto = categoryService.updateCategory(1L, categoriesList.getLast());
 
-        assertThat(categoryResponse).isEqualTo(categoriesList.getLast());
+        assertThat(categoryDto).isEqualTo(categoriesList.getLast());
     }
 
     @Test

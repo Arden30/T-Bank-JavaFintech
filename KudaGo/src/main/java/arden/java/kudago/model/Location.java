@@ -3,6 +3,7 @@ package arden.java.kudago.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -23,5 +24,5 @@ public class Location {
     private String slug;
 
     @OneToMany(mappedBy = "location", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private Set<Event> events;
+    private Set<Event> events = new HashSet<>();
 }

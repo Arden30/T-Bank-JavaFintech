@@ -1,6 +1,6 @@
 package arden.java.kudago.service;
 
-import arden.java.kudago.dto.response.places.LocationResponse;
+import arden.java.kudago.dto.response.places.LocationDto;
 import arden.java.kudago.exception.IdNotFoundException;
 import arden.java.kudago.model.Location;
 import arden.java.kudago.repository.LocationRepository;
@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,26 +31,26 @@ public class LocationServiceTest {
     private LocationServiceImpl locationService;
 
     private final List<Optional<Location>> locations = List.of(
-            Optional.of(new Location(1L, "Магазин здорового питания", "shop", null)),
-            Optional.of(new Location(2L, "Кафе быстрого питания", "cafe", null))
+            Optional.of(new Location(1L, "Магазин здорового питания", "shop", new HashSet<>())),
+            Optional.of(new Location(2L, "Кафе быстрого питания", "cafe", new HashSet<>()))
     );
 
-    private final List<LocationResponse> locationsList = List.of(
-            new LocationResponse("shop", "Магазин здорового питания"),
-            new LocationResponse("cafe", "Кафе быстрого питания")
+    private final List<LocationDto> locationsList = List.of(
+            new LocationDto("shop", "Магазин здорового питания"),
+            new LocationDto("cafe", "Кафе быстрого питания")
     );
 
     @Test
     @DisplayName("Getting all locations: success test")
     public void getAllLocations_successTest() {
         //Arrange
-        when(locationRepository.findAll()).thenReturn(locations.stream().map(location -> location.get()).toList());
+        when(locationRepository.findAll()).thenReturn(locations.stream().map(Optional::get).toList());
 
         //Act
-        List<LocationResponse> locationResponses = locationService.getAllLocations();
+        List<LocationDto> locationResponse = locationService.getAllLocations();
 
         //Assert
-        assertThat(locationResponses).isEqualTo(locationsList);
+        assertThat(locationResponse).isEqualTo(locationsList);
     }
 
     @Test
@@ -57,25 +58,25 @@ public class LocationServiceTest {
     public void getAllLocations_failTest() {
         when(locationRepository.findAll()).thenReturn(Collections.emptyList());
 
-        List<LocationResponse> locationResponses = locationService.getAllLocations();
+        List<LocationDto> locationResponse = locationService.getAllLocations();
 
-        assertThat(Collections.emptyList()).isEqualTo(locationResponses);
+        assertThat(Collections.emptyList()).isEqualTo(locationResponse);
     }
 
     @Test
     @DisplayName("Getting Location by id: success test")
     public void getLocationBySlug_successTest() {
-        when(locationRepository.findById(1L)).thenReturn(locations.getFirst());
+        when(locationRepository.findByIdEager(1L)).thenReturn(locations.getFirst());
 
-        LocationResponse LocationResponse = locationService.getLocationById(1L);
+        LocationDto LocationDto = locationService.getLocationById(1L);
 
-        assertThat(LocationResponse).isEqualTo(locationsList.getFirst());
+        assertThat(LocationDto).isEqualTo(locationsList.getFirst());
     }
 
     @Test
     @DisplayName("Getting Location by id: fail test")
     public void getLocationBySlug_failTest() {
-        when(locationRepository.findById(1L)).thenThrow(new IdNotFoundException("id not found"));
+        when(locationRepository.findByIdEager(1L)).thenThrow(new IdNotFoundException("id not found"));
 
         assertThrows(IdNotFoundException.class, () -> locationService.getLocationById(1L));
     }
@@ -85,20 +86,20 @@ public class LocationServiceTest {
     public void createLocation_successTest() {
         when(locationRepository.save(any(Location.class))).thenReturn(locations.getFirst().get());
 
-        LocationResponse LocationResponse = locationService.createLocation(locationsList.getFirst());
+        LocationDto LocationDto = locationService.createLocation(locationsList.getFirst());
 
-        assertThat(LocationResponse).isEqualTo(locationsList.getFirst());
+        assertThat(LocationDto).isEqualTo(locationsList.getFirst());
     }
 
     @Test
     @DisplayName("Update Location: success test")
     public void updateLocation_successTest() {
         when(locationRepository.save(any(Location.class))).thenReturn(locations.getLast().get());
-        when(locationRepository.findById(1L)).thenReturn(locations.getFirst());
+        when(locationRepository.findByIdEager(1L)).thenReturn(locations.getFirst());
 
-        LocationResponse LocationResponse = locationService.updateLocation(1L, locationsList.getLast());
+        LocationDto LocationDto = locationService.updateLocation(1L, locationsList.getLast());
 
-        assertThat(LocationResponse).isEqualTo(locationsList.getLast());
+        assertThat(LocationDto).isEqualTo(locationsList.getLast());
     }
 
     @Test
