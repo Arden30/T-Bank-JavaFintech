@@ -4,7 +4,6 @@ import arden.java.kudago.dto.response.event.EventDto;
 import arden.java.kudago.exception.IdNotFoundException;
 import arden.java.kudago.model.Event;
 import arden.java.kudago.repository.EventRepository;
-import arden.java.kudago.repository.LocationRepository;
 import arden.java.kudago.service.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
