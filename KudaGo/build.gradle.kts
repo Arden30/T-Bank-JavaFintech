@@ -37,6 +37,9 @@ repositories {
 
 dependencies {
 	implementation(project(":starter"))
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	runtimeOnly("org.postgresql:postgresql")
+	implementation("org.liquibase:liquibase-core")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-devtools")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -49,9 +52,12 @@ dependencies {
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 	testImplementation("org.wiremock:wiremock-standalone:${wiremockVersion}")
 	testImplementation("org.wiremock.integrations.testcontainers:wiremock-testcontainers-module:${wiremockTestcontainersVersion}")
 	testImplementation("org.testcontainers:junit-jupiter:${testcontainersVersion}")
+	testImplementation("org.testcontainers:postgresql")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

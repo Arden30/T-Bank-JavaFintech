@@ -1,6 +1,32 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: KudaGo
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${HOST}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  liquibase:
+    enabled: false
+    change-log: db/changelog/changelog-master.yaml
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        session:
+          events:
+            log:
+              LOG_QUERIES_SLOWER_THAN_MS: 25
+        show_sql: true
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: warn
 
 base-config:
   kuda-go-url: https://kudago.com/public-api/v1.4/

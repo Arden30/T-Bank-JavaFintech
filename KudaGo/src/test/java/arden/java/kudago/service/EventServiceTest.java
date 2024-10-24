@@ -1,121 +1,119 @@
 package arden.java.kudago.service;
 
-import arden.java.kudago.client.CurrencyRestTemplate;
-import arden.java.kudago.client.EventRestTemplate;
-import arden.java.kudago.dto.request.CurrencyConvertRequest;
-import arden.java.kudago.dto.response.event.EventResponse;
-import arden.java.kudago.dto.response.event.Event;
+import arden.java.kudago.dto.response.event.EventDto;
+import arden.java.kudago.exception.IdNotFoundException;
+import arden.java.kudago.model.Event;
+import arden.java.kudago.repository.EventRepository;
 import arden.java.kudago.service.impl.EventServiceImpl;
-import arden.java.kudago.utils.DateParser;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class EventServiceTest {
+    @Mock
+    private EventRepository eventRepository;
     @InjectMocks
     private EventServiceImpl eventService;
 
-    @Mock
-    private CurrencyRestTemplate currencyRestTemplate;
+    private final List<Optional<Event>> events = List.of(
+            Optional.of(new Event(1L, "Party", OffsetDateTime.parse("2024-10-23T15:30:00+01:00"), null)),
+            Optional.of(new Event(2L, "Concert", OffsetDateTime.parse("2024-10-21T15:30:00+01:00"), null))
+    );
 
-    @Mock
-    private EventRestTemplate eventRestTemplate;
+    private final List<EventDto> eventsList = List.of(
+            new EventDto("Party", OffsetDateTime.parse("2024-10-23T15:30:00+01:00"), null),
+            new EventDto("Concert", OffsetDateTime.parse("2024-10-21T15:30:00+01:00"), null)
+    );
 
-    @Mock
-    private ExecutorService executorService;
+    @Test
+    @DisplayName("Getting all Events: success test")
+    public void getAllEvents_successTest() {
+        //Arrange
+        when(eventRepository.findAll()).thenReturn(events.stream().map(Optional::get).toList());
 
-    @BeforeEach
-    void setUp() {
-        executorService = Executors.newFixedThreadPool(10);
-        eventService = new EventServiceImpl(eventRestTemplate, currencyRestTemplate, new Semaphore(3), executorService);
+        //Act
+        List<EventDto> EventDto = eventService.getAllEvents();
+
+        //Assert
+        assertThat(EventDto).isEqualTo(eventsList);
     }
 
     @Test
-    @DisplayName("Только одно из двух мероприятий подходит по цене")
-    void getSuitableEvents_differentPrices_successTest() {
-        CurrencyConvertRequest currencyConvertRequest = CurrencyConvertRequest.builder()
-                .fromCurrency("USD")
-                .toCurrency("RUB")
-                .amount(100D)
-                .build();
-        EventResponse suitableEventResponse = EventResponse.builder()
-                .id(1L)
-                .dates(List.of(new EventResponse.Dates(1727740800L, 1738368000L))) // от 01.10.24 до 01.02.25
-                .title("Фестиваль осени")
-                .description("Какой-то классный фестиваль")
-                .siteUrl("https://festival.ru")
-                .price("400.0")
-                .favoritesCount(30L)
-                .build();
-        EventResponse unsuitableEventResponse = EventResponse.builder()
-                .id(2L)
-                .dates(List.of(new EventResponse.Dates(1727740800L, 1738368000L))) // от 01.10.24 до 01.02.25
-                .title("Очень дорогое")
-                .description("Ну очень дорогое")
-                .siteUrl("https://expensive.ru")
-                .price("40000000.0")
-                .favoritesCount(30L)
-                .build();
-        LocalDate start = LocalDate.of(2024, 10, 1);
-        LocalDate end = LocalDate.of(2025, 3, 1);
+    @DisplayName("Getting all Events: fail test")
+    public void getAllEvents_failTest() {
+        when(eventRepository.findAll()).thenReturn(Collections.emptyList());
 
-        when(eventRestTemplate.getEvents(DateParser.toEpochSeconds(start), DateParser.toEpochSeconds(end))).thenReturn(Optional.of(List.of(
-                suitableEventResponse,
-                unsuitableEventResponse
-        )));
-        when(currencyRestTemplate.convertPrice(currencyConvertRequest)).thenReturn(Optional.of(1000D));
-        List<Event> events = eventService.getSuitableEvents(100D, "USD", start, end).join();
+        List<EventDto> EventDto = eventService.getAllEvents();
 
-        assertAll("Check response",
-                () -> assertThat(events.size()).isEqualTo(1),
-                () -> assertThat(events.getFirst().id()).isEqualTo(1L));
+        assertThat(Collections.emptyList()).isEqualTo(EventDto);
     }
 
     @Test
-    @DisplayName("Дата не указана")
-    void getSuitableEvents_differentDates_successTest() {
-        CurrencyConvertRequest currencyConvertRequest = CurrencyConvertRequest.builder()
-                .fromCurrency("USD")
-                .toCurrency("RUB")
-                .amount(100D)
-                .build();
-        EventResponse eventResponse = EventResponse.builder()
-                .id(1L)
-                .dates(List.of(new EventResponse.Dates(1727740800L, 1738368000L))) // от 01.10.24 до 01.02.25
-                .title("Выставка")
-                .description("Бесплатная выставка")
-                .siteUrl("https://free.ru")
-                .price("0.0")
-                .favoritesCount(30L)
-                .build();
+    @DisplayName("Getting Event by id: success test")
+    public void getEventBySlug_successTest() {
+        when(eventRepository.findById(1L)).thenReturn(events.getFirst());
 
-        LocalDate start = LocalDate.now();
-        LocalDate end = LocalDate.now().plusWeeks(1);
-        when(eventRestTemplate.getEvents(DateParser.toEpochSeconds(start), DateParser.toEpochSeconds(end))).thenReturn(Optional.of(List.of(
-                eventResponse
-        )));
-        when(currencyRestTemplate.convertPrice(currencyConvertRequest)).thenReturn(Optional.of(1000D));
-        List<Event> events = eventService.getSuitableEvents(100D, "USD", null, null).join();
+        EventDto EventDto = eventService.getEventById(1L);
 
-        assertAll("Check response",
-                () -> assertThat(events.size()).isEqualTo(1),
-                () -> assertThat(events.getFirst().id()).isEqualTo(1L),
-                () -> assertThat(events.getFirst().price()).isEqualTo("бесплатно"));
+        assertThat(EventDto).isEqualTo(eventsList.getFirst());
+    }
+
+    @Test
+    @DisplayName("Getting Event by id: fail test")
+    public void getEventBySlug_failTest() {
+        when(eventRepository.findById(1L)).thenThrow(new IdNotFoundException("id not found"));
+
+        assertThrows(IdNotFoundException.class, () -> eventService.getEventById(1L));
+    }
+
+    @Test
+    @DisplayName("Create new Event: success test")
+    public void createEvent_successTest() {
+        when(eventRepository.save(any(Event.class))).thenReturn(events.getFirst().get());
+
+        EventDto EventDto = eventService.createEvent(eventsList.getFirst());
+
+        assertThat(EventDto).isEqualTo(eventsList.getFirst());
+    }
+
+    @Test
+    @DisplayName("Update Event: success test")
+    public void updateEvent_successTest() {
+        when(eventRepository.save(any(Event.class))).thenReturn(events.getLast().get());
+        when(eventRepository.findById(1L)).thenReturn(events.getFirst());
+
+        EventDto EventDto = eventService.updateEvent(1L, eventsList.getLast());
+
+        assertThat(EventDto).isEqualTo(eventsList.getLast());
+    }
+
+    @Test
+    @DisplayName("Update Event: fail test")
+    public void updateEvent_failTest() {
+        assertThrows(IdNotFoundException.class, () -> eventService.updateEvent(2L, eventsList.getLast()));
+    }
+
+    @Test
+    @DisplayName("Delete Event: success test")
+    public void deleteEvent_successTest() {
+        assertDoesNotThrow(() -> eventService.deleteEvent(events.getFirst().get().getId()));
     }
 }

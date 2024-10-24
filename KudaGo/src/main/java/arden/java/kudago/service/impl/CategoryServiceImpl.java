@@ -1,6 +1,6 @@
 package arden.java.kudago.service.impl;
 
-import arden.java.kudago.dto.response.places.Category;
+import arden.java.kudago.dto.response.places.CategoryDto;
 import arden.java.kudago.exception.CreationObjectException;
 import arden.java.kudago.exception.IdNotFoundException;
 import arden.java.kudago.repository.StorageRepository;
@@ -15,15 +15,15 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class CategoryServiceImpl implements CategoryService {
-    private final StorageRepository<Long, Category> categoryRepository;
+    private final StorageRepository<Long, CategoryDto> categoryRepository;
 
     @Override
-    public List<Category> getAllCategories() {
+    public List<CategoryDto> getAllCategories() {
         return categoryRepository.readAll();
     }
 
     @Override
-    public Category getCategoryById(Long id) {
+    public CategoryDto getCategoryById(Long id) {
         if (categoryRepository.read(id) == null) {
             throw new IdNotFoundException("Category with id = " + id + " not found");
         }
@@ -32,25 +32,25 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Category createCategory(Category category) {
-        if (categoryRepository.create(category.id(), category) == null) {
+    public CategoryDto createCategory(CategoryDto categoryDto) {
+        if (categoryRepository.create(categoryDto.id(), categoryDto) == null) {
             throw new CreationObjectException("Could not create category, because your input format is wrong, check again");
         }
 
-        return categoryRepository.create(category.id(), category);
+        return categoryRepository.create(categoryDto.id(), categoryDto);
     }
 
     @Override
-    public Category updateCategory(Long id, Category category) {
+    public CategoryDto updateCategory(Long id, CategoryDto categoryDto) {
         if (categoryRepository.read(id) == null) {
             throw new IdNotFoundException("Category with id = " + id + " not found");
         }
 
-        if (categoryRepository.update(id, category) == null) {
+        if (categoryRepository.update(id, categoryDto) == null) {
             throw new CreationObjectException("Could not update category, because your input format is wrong, check again");
         }
 
-        return categoryRepository.update(id, category);
+        return categoryRepository.update(id, categoryDto);
     }
 
     @Override

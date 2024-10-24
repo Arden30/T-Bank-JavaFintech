@@ -1,0 +1,40 @@
+networks:
+  backend: { }
+
+volumes:
+  postgresql: { }
+
+services:
+  postgresql:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=kudago
+      - POSTGRES_PASSWORD=kudago
+      - POSTGRES_USER=kudago
+    ports:
+      - "5555:5432"
+    volumes:
+      - postgresql:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U kudago" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  liquibase-migrations:
+    image: liquibase/liquibase:4.25
+    depends_on:
+      - postgresql
+    command:
+      - --changelog-file=changelog-master.yaml
+      - --driver=org.postgresql.Driver
+      - --url=jdbc:postgresql://postgresql:5432/kudago
+      - --username=kudago
+      - --password=kudago
+      - update
+    volumes:
+      - ./src/main/resources/db/changelog:/liquibase/changelog
+    networks:
+      - backend
