@@ -1,21 +1,16 @@
 package arden.java.kudago.controller;
 
 import arden.java.kudago.dto.response.event.EventDto;
-import arden.java.kudago.dto.response.event.SuitableEvent;
 import arden.java.kudago.dto.response.event.EventResponse;
-import arden.java.kudago.model.Event;
+import arden.java.kudago.dto.response.event.SuitableEvent;
 import arden.java.kudago.model.specification.EventSpecification;
 import arden.java.kudago.service.EventService;
 import arden.java.kudago.service.SuitableEventService;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import net.kaczmarzyk.spring.data.jpa.domain.Between;
-import net.kaczmarzyk.spring.data.jpa.domain.Equal;
-import net.kaczmarzyk.spring.data.jpa.web.annotation.Spec;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -23,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.List;
 
 @RestController
@@ -32,20 +26,20 @@ import java.util.List;
 public class EventController {
     private final SuitableEventService<Mono<List<EventResponse>>, Mono<List<SuitableEvent>>> suitableEventService;
     private final EventService eventService;
-    
+
     @Validated
     @GetMapping("/suitable")
     public ResponseEntity<List<SuitableEvent>> getSuitableEvents(@RequestParam @Min(value = 0, message = "Ваш бюджет должен быть неотрицательным числом")
-                                                         Double budget,
+                                                                 Double budget,
 
                                                                  @RequestParam @NotNull(message = "Укажите валюту для конвертации")
-                                                         String currency,
+                                                                 String currency,
 
                                                                  @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd")
-                                                         LocalDate dateFrom,
+                                                                 LocalDate dateFrom,
 
                                                                  @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd")
-                                                         LocalDate dateTo) {
+                                                                 LocalDate dateTo) {
         return ResponseEntity.ok(suitableEventService.getSuitableEvents(budget, currency, dateFrom, dateTo).block());
     }
 
