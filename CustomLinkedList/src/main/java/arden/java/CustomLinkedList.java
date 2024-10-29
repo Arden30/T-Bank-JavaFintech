@@ -3,11 +3,13 @@ package arden.java;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.function.Consumer;
 
 public class CustomLinkedList<T> implements CustomList<T> {
     private Node<T> head;
     private Node<T> tail;
-    int size = 0;
+    private int size = 0;
 
     public void add(T data) {
         Node<T> newNode = new Node<>(data);
@@ -102,6 +104,11 @@ public class CustomLinkedList<T> implements CustomList<T> {
         return list;
     }
 
+    @Override
+    public CustomIterator<T> iterator() {
+        return new CustomLinkedListIterator();
+    }
+
     public void display() {
         Node<T> node = head;
         while (node != null) {
@@ -125,6 +132,36 @@ public class CustomLinkedList<T> implements CustomList<T> {
             this.data = data;
             this.prev = null;
             this.next = null;
+        }
+    }
+
+    public class CustomLinkedListIterator implements CustomIterator<T> {
+        private Node<T> next = head;
+        private int nextIndex = 0;
+
+        @Override
+        public boolean hasNext() {
+            return nextIndex < size;
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            T data = next.data;
+            next = next.next;
+            nextIndex++;
+
+            return data;
+        }
+
+        @Override
+        public void forEachRemaining(Consumer<? super T> action) {
+            while (nextIndex < size) {
+                action.accept(next());
+            }
         }
     }
 }
