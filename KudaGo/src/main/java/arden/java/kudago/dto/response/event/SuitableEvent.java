@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Builder
-public record Event(
+public record SuitableEvent(
         Long id,
         List<ConvertedDates> dates,
         String title,

@@ -1,12 +1,20 @@
 package arden.java.kudago.service;
 
-import org.springframework.scheduling.annotation.Async;
+import arden.java.kudago.dto.response.event.EventDto;
+import arden.java.kudago.model.specification.EventSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDate;
+public interface EventService {
+    Page<EventDto> getAllEvents(Pageable pageable);
 
-public interface EventService<T, U> {
-    T getEvents(LocalDate dateFrom, LocalDate dateTo);
+    Page<EventDto> getEventsByFilter(EventSpecification specification, Pageable pageable);
 
-    @Async
-    U getSuitableEvents(Double budget, String currency, LocalDate dateFrom, LocalDate dateTo);
+    EventDto getEventById(Long id);
+
+    EventDto createEvent(EventDto EventDto);
+
+    EventDto updateEvent(Long id, EventDto EventDto);
+
+    void deleteEvent(Long id);
 }

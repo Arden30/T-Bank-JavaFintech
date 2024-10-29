@@ -1,6 +1,6 @@
 package arden.java.kudago.client;
 
-import arden.java.kudago.dto.response.places.Category;
+import arden.java.kudago.dto.response.places.CategoryDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,7 +33,7 @@ public class CategoryRestTemplateTest {
 
     @Test
     public void testGetAllCategories() {
-        Optional<List<Category>> categories = categoryRestTemplate.getAllCategories();
+        Optional<List<CategoryDto>> categories = categoryRestTemplate.getAllCategories();
 
         assertAll("Check response",
                 () -> assertThat(categories.isPresent()).isTrue(),

@@ -1,7 +1,7 @@
 package arden.java.kudago.dto.response.places;
 
-public record Location(
+public record CategoryDto(
+        Long id,
         String slug,
         String name
-) {
-}
+) {}

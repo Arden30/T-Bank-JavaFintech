@@ -1,9 +1,9 @@
 package arden.java.kudago.service.impl;
 
-import arden.java.kudago.dto.response.places.Location;
-import arden.java.kudago.exception.CreationObjectException;
+import arden.java.kudago.dto.response.places.LocationDto;
 import arden.java.kudago.exception.IdNotFoundException;
-import arden.java.kudago.repository.StorageRepository;
+import arden.java.kudago.model.Location;
+import arden.java.kudago.repository.LocationRepository;
 import arden.java.kudago.service.LocationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,50 +15,51 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class LocationServiceImpl implements LocationService {
-    private final StorageRepository<String, Location> locationStorage;
+    private final LocationRepository locationRepository;
 
     @Override
-    public List<Location> getAllLocations() {
-        return locationStorage.readAll();
+    public List<LocationDto> getAllLocations() {
+        return locationRepository.findAll().stream()
+                .map(this::createResponseFromLocation)
+                .toList();
     }
 
     @Override
-    public Location getLocationBySlug(String slug) {
-        if (locationStorage.read(slug) == null) {
-            throw new IdNotFoundException("Location with slug '" + slug + "' not found");
-        }
-
-        return locationStorage.read(slug);
+    public LocationDto getLocationById(Long id) {
+        return createResponseFromLocation(locationRepository.findByIdEager(id)
+                .orElseThrow(() -> new IdNotFoundException("Location with id '" + id + "' not found")));
     }
 
     @Override
-    public Location createLocation(Location location) {
-        if (locationStorage.create(location.slug(), location) == null) {
-            throw new CreationObjectException("Could not create location, because your input format is wrong, check again");
-        }
-
-        return locationStorage.create(location.slug(), location);
+    public LocationDto createLocation(LocationDto locationDto) {
+        return createResponseFromLocation(locationRepository.save(createLocationFromResponse(locationDto)));
     }
 
     @Override
-    public Location updateLocation(String slug, Location location) {
-        if (locationStorage.read(slug) == null) {
-            throw new IdNotFoundException("Location with slug '" + slug + "' not found");
-        }
+    public LocationDto updateLocation(Long id, LocationDto locationDto) {
+        Location existingLocation = locationRepository.findByIdEager(id)
+                .orElseThrow(() -> new IdNotFoundException("Location with id '" + id + "' not found"));
 
-        if (locationStorage.update(slug, location) == null) {
-            throw new CreationObjectException("Could not update location, because your input format is wrong, check again");
-        }
+        existingLocation.setName(locationDto.name());
+        existingLocation.setSlug(locationDto.slug());
 
-        return locationStorage.update(slug, location);
+        return createResponseFromLocation(locationRepository.save(existingLocation));
     }
 
     @Override
-    public boolean deleteLocation(String slug) {
-        if (locationStorage.read(slug) == null || !locationStorage.delete(slug)) {
-            throw new IdNotFoundException("Location with slug '" + slug + "' not found");
-        }
+    public void deleteLocation(Long id) {
+        locationRepository.deleteById(id);
+    }
 
-        return locationStorage.delete(slug);
+    public LocationDto createResponseFromLocation(Location location) {
+        return new LocationDto(location.getSlug(), location.getName());
+    }
+
+    public Location createLocationFromResponse(LocationDto locationDto) {
+        Location location = new Location();
+        location.setName(locationDto.name());
+        location.setSlug(locationDto.slug());
+
+        return location;
     }
 }

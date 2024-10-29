@@ -3,9 +3,9 @@ package arden.java.kudago.service;
 import arden.java.kudago.client.CurrencyRestTemplate;
 import arden.java.kudago.client.EventRestTemplate;
 import arden.java.kudago.dto.request.CurrencyConvertRequest;
-import arden.java.kudago.dto.response.event.Event;
 import arden.java.kudago.dto.response.event.EventResponse;
-import arden.java.kudago.service.impl.EventServiceReactiveImpl;
+import arden.java.kudago.dto.response.event.SuitableEvent;
+import arden.java.kudago.service.impl.SuitableEventServiceImpl;
 import arden.java.kudago.utils.DateParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,15 +18,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class EventServiceReactiveTest {
+public class SuitableEventServiceTest {
     @InjectMocks
-    private EventServiceReactiveImpl eventService;
+    private SuitableEventServiceImpl eventService;
 
     @Mock
     private CurrencyRestTemplate currencyRestTemplate;
@@ -34,9 +37,13 @@ public class EventServiceReactiveTest {
     @Mock
     private EventRestTemplate eventRestTemplate;
 
+    @Mock
+    private ExecutorService executorService;
+
     @BeforeEach
     void setUp() {
-        eventService = new EventServiceReactiveImpl(eventRestTemplate, currencyRestTemplate);
+        executorService = Executors.newFixedThreadPool(10);
+        eventService = new SuitableEventServiceImpl(eventRestTemplate, currencyRestTemplate, new Semaphore(3), executorService);
     }
 
     @Test
@@ -73,11 +80,11 @@ public class EventServiceReactiveTest {
                 unsuitableEventResponse
         )));
         when(currencyRestTemplate.convertPrice(currencyConvertRequest)).thenReturn(Optional.of(1000D));
-        List<Event> events = eventService.getSuitableEvents(100D, "USD", start, end).block();
+        List<SuitableEvent> suitableEvents = eventService.getSuitableEvents(100D, "USD", start, end).join();
 
         assertAll("Check response",
-                () -> assertThat(events.size()).isEqualTo(1),
-                () -> assertThat(events.getFirst().id()).isEqualTo(1L));
+                () -> assertThat(suitableEvents.size()).isEqualTo(1),
+                () -> assertThat(suitableEvents.getFirst().id()).isEqualTo(1L));
     }
 
     @Test
@@ -104,11 +111,11 @@ public class EventServiceReactiveTest {
                 eventResponse
         )));
         when(currencyRestTemplate.convertPrice(currencyConvertRequest)).thenReturn(Optional.of(1000D));
-        List<Event> events = eventService.getSuitableEvents(100D, "USD", null, null).block();
+        List<SuitableEvent> suitableEvents = eventService.getSuitableEvents(100D, "USD", null, null).join();
 
         assertAll("Check response",
-                () -> assertThat(events.size()).isEqualTo(1),
-                () -> assertThat(events.getFirst().id()).isEqualTo(1L),
-                () -> assertThat(events.getFirst().price()).isEqualTo("бесплатно"));
+                () -> assertThat(suitableEvents.size()).isEqualTo(1),
+                () -> assertThat(suitableEvents.getFirst().id()).isEqualTo(1L),
+                () -> assertThat(suitableEvents.getFirst().price()).isEqualTo("бесплатно"));
     }
 }
