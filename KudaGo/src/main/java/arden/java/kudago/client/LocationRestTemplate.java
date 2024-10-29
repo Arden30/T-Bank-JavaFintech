@@ -1,7 +1,7 @@
 package arden.java.kudago.client;
 
 import arden.java.kudago.config.UrlConfig;
-import arden.java.kudago.dto.Location;
+import arden.java.kudago.dto.response.places.LocationDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -16,9 +16,9 @@ public class LocationRestTemplate {
     private final RestTemplate restTemplate;
     private final UrlConfig urlConfig;
 
-    public Optional<List<Location>> getLocations() {
-        ResponseEntity<List<Location>> response = restTemplate
-                .exchange(urlConfig.url() + "/locations",
+    public Optional<List<LocationDto>> getLocations() {
+        ResponseEntity<List<LocationDto>> response = restTemplate
+                .exchange(urlConfig.kudaGoUrl() + "/locations",
                         HttpMethod.GET,
                         null,
                         new ParameterizedTypeReference<>() {

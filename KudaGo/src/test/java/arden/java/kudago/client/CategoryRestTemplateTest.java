@@ -1,6 +1,6 @@
 package arden.java.kudago.client;
 
-import arden.java.kudago.dto.Category;
+import arden.java.kudago.dto.response.places.CategoryDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,12 +28,12 @@ public class CategoryRestTemplateTest {
 
     @DynamicPropertySource
     public static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("base-config.url", wiremockServer::getBaseUrl);
+        registry.add("base-config.kuda-go-url", wiremockServer::getBaseUrl);
     }
 
     @Test
-    public void testGetAllLocations() {
-        Optional<List<Category>> categories = categoryRestTemplate.getAllCategories();
+    public void testGetAllCategories() {
+        Optional<List<CategoryDto>> categories = categoryRestTemplate.getAllCategories();
 
         assertAll("Check response",
                 () -> assertThat(categories.isPresent()).isTrue(),

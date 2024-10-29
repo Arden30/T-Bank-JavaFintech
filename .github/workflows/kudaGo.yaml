@@ -5,7 +5,7 @@ on:
   pull_request:
     branches:
       - main
-
+      - fj_2024_lesson_8
 
 jobs:
   build:
@@ -14,6 +14,21 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: kudago
+          POSTGRES_USER: kudago
+          POSTGRES_PASSWORD: kudago
+        ports:
+          - 5555:5432
+        options: >-
+          --health-cmd "pg_isready -U kudago"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -42,4 +57,3 @@ jobs:
           min-coverage-changed-files: 70
           title: Code Coverage
           update-comment: true
-

@@ -1,17 +1,17 @@
 package arden.java.kudago.service;
 
-import arden.java.kudago.dto.Category;
+import arden.java.kudago.dto.response.places.CategoryDto;
 
 import java.util.List;
 
 public interface CategoryService {
-    List<Category> getAllCategories();
+    List<CategoryDto> getAllCategories();
 
-    Category getCategoryById(Long id);
+    CategoryDto getCategoryById(Long id);
 
-    Category createCategory(Category category);
+    CategoryDto createCategory(CategoryDto categoryDto);
 
-    Category updateCategory(Long id, Category category);
+    CategoryDto updateCategory(Long id, CategoryDto categoryDto);
 
     boolean deleteCategory(Long id);
 }

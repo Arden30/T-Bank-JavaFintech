@@ -1,11 +1,10 @@
 package arden.java.kudago.controller;
 
-import arden.java.kudago.dto.Location;
+import arden.java.kudago.dto.response.places.LocationDto;
 import arden.java.kudago.exception.CreationObjectException;
 import arden.java.kudago.exception.IdNotFoundException;
 import arden.java.kudago.service.LocationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -15,35 +14,31 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(LocationController.class)
 public class LocationControllerTest {
     @Autowired
     private MockMvc mockMvc;
-    
+
     @MockBean
     private LocationService locationService;
 
+    @Autowired
     private ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setup() {
-        objectMapper = new ObjectMapper();
-    }
-
     @Test
-    void testGetlocationsSuccess() throws Exception {
-        List<Location> locations = List.of(
-                new Location("spb",  "Кафе быстрого питания"),
-                new Location("ekb",  "Магазин одежды")
+    void testGetLocationsSuccess() throws Exception {
+        List<LocationDto> locationResponse = List.of(
+                new LocationDto("spb", "Кафе быстрого питания"),
+                new LocationDto("ekb", "Магазин одежды")
         );
 
-        when(locationService.getAllLocations()).thenReturn(locations);
+        when(locationService.getAllLocations()).thenReturn(locationResponse);
 
         mockMvc.perform(get("/api/v1/locations"))
                 .andExpect(status().isOk())
@@ -54,10 +49,10 @@ public class LocationControllerTest {
 
     @Test
     void testGetLocationBySlugSuccess() throws Exception {
-        Location Location = new Location("spb",  "Кафе быстрого питания");
-        when(locationService.getLocationBySlug("spb")).thenReturn(Location);
+        LocationDto LocationDto = new LocationDto("spb", "Кафе быстрого питания");
+        when(locationService.getLocationById(1L)).thenReturn(LocationDto);
 
-        mockMvc.perform(get("/api/v1/locations/spb"))
+        mockMvc.perform(get("/api/v1/locations/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.slug").value("spb"));
@@ -65,7 +60,7 @@ public class LocationControllerTest {
 
     @Test
     void testGetLocationBySlugNotFound() throws Exception {
-        when(locationService.getLocationBySlug(anyString())).thenThrow(new IdNotFoundException("Location not found"));
+        when(locationService.getLocationById(anyLong())).thenThrow(new IdNotFoundException("Location not found"));
 
         mockMvc.perform(get("/api/v1/locations/999"))
                 .andExpect(status().isNotFound());
@@ -73,14 +68,13 @@ public class LocationControllerTest {
 
     @Test
     void testCreateLocationSuccess() throws Exception {
-        Location newLocation = new Location(null, "Музей воды");
-        Location createdLocation = new Location("spb", "Музей воды");
+        LocationDto createdLocationDto = new LocationDto("spb", "Музей воды");
 
-        when(locationService.createLocation(any(Location.class))).thenReturn(createdLocation);
+        when(locationService.createLocation(any(LocationDto.class))).thenReturn(createdLocationDto);
 
         mockMvc.perform(post("/api/v1/locations")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newLocation)))
+                        .content(objectMapper.writeValueAsString(createdLocationDto)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.slug").value("spb"));
@@ -88,24 +82,24 @@ public class LocationControllerTest {
 
     @Test
     void testCreateLocationInvalidData() throws Exception {
-        Location invalidLocation = new Location(null, "");
-        when(locationService.createLocation(any(Location.class))).thenThrow(new CreationObjectException("Can't create an object"));
+        LocationDto invalidLocationDto = new LocationDto(null, "");
+        when(locationService.createLocation(any(LocationDto.class))).thenThrow(new CreationObjectException("Can't create an object"));
 
         mockMvc.perform(post("/api/v1/locations")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidLocation)))
+                        .content(objectMapper.writeValueAsString(invalidLocationDto)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void testUpdateLocationSuccess() throws Exception {
-        Location updatedLocation = new Location("spb",  "Restaurant");
+        LocationDto updatedLocationDto = new LocationDto("spb", "Restaurant");
 
-        when(locationService.updateLocation(anyString(), any(Location.class))).thenReturn(updatedLocation);
+        when(locationService.updateLocation(anyLong(), any(LocationDto.class))).thenReturn(updatedLocationDto);
 
-        mockMvc.perform(put("/api/v1/locations/spb")
+        mockMvc.perform(put("/api/v1/locations/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedLocation)))
+                        .content(objectMapper.writeValueAsString(updatedLocationDto)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.slug").value("spb"));
@@ -113,20 +107,20 @@ public class LocationControllerTest {
 
     @Test
     void testUpdateLocationNotFound() throws Exception {
-        when(locationService.updateLocation(anyString(), any(Location.class)))
+        when(locationService.updateLocation(anyLong(), any(LocationDto.class)))
                 .thenThrow(new IdNotFoundException("Location not found"));
 
         mockMvc.perform(put("/api/v1/locations/999")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new Location("gfg", "Unknown"))))
+                        .content(objectMapper.writeValueAsString(new LocationDto("gfg", "Unknown"))))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void testDeleteLocationSuccess() throws Exception {
-        when(locationService.deleteLocation("spb")).thenReturn(true);
+        doNothing().when(locationService).deleteLocation(1L);
 
-        mockMvc.perform(delete("/api/v1/locations/spb"))
+        mockMvc.perform(delete("/api/v1/locations/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().string("true"));
@@ -134,7 +128,7 @@ public class LocationControllerTest {
 
     @Test
     void testDeleteLocationNotFound() throws Exception {
-        when(locationService.deleteLocation(anyString())).thenThrow(new IdNotFoundException("Location not found"));
+        doThrow(new IdNotFoundException("Location not found")).when(locationService).deleteLocation(anyLong());
 
         mockMvc.perform(delete("/api/v1/locations/999"))
                 .andExpect(status().isNotFound());
