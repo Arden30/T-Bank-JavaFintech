@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.time.Duration;
 import java.util.concurrent.*;
 
 @Configuration
@@ -30,16 +29,6 @@ public class ThreadPoolConfiguration {
                 .build();
 
         return Executors.newScheduledThreadPool(threadsConfig.threadsNum(), threadFactory);
-    }
-
-    @Bean
-    public Duration period() {
-        return Duration.ofSeconds(threadsConfig.periodInSeconds());
-    }
-
-    @Bean
-    public Duration delay() {
-        return Duration.ofSeconds(threadsConfig.delayInSeconds());
     }
 
     @Bean
