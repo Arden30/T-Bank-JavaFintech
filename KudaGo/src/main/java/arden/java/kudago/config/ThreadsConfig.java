@@ -3,14 +3,16 @@ package arden.java.kudago.config;
 import lombok.NonNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "multithreading")
 public record ThreadsConfig(
         @NonNull
         Integer threadsNum,
         @NonNull
-        Long periodInSeconds,
+        Duration periodInSeconds,
         @NonNull
-        Long delayInSeconds,
+        Duration delayInSeconds,
         @NonNull
         Integer maxNumOfThreads
 ) {

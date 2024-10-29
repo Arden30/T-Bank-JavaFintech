@@ -2,6 +2,7 @@ package arden.java.kudago.event;
 
 import arden.java.kudago.client.CategoryRestTemplate;
 import arden.java.kudago.client.LocationRestTemplate;
+import arden.java.kudago.config.ThreadsConfig;
 import arden.java.kudago.dto.response.places.Category;
 import arden.java.kudago.dto.response.places.Location;
 import arden.java.kudago.exception.GeneralException;
@@ -19,7 +20,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -40,8 +40,7 @@ public class StartupLogic implements ApplicationContextAware {
     private final ExecutorService fixedThreadPool;
     @Qualifier("scheduledThreadPool")
     private final ScheduledExecutorService scheduledExecutorService;
-    private final Duration period;
-    private final Duration delay;
+    private final ThreadsConfig threadsConfig;
     private ApplicationContext applicationContext;
 
     @Override
@@ -52,7 +51,7 @@ public class StartupLogic implements ApplicationContextAware {
     @EventListener(ApplicationReadyEvent.class)
     public void startup() {
         log.info("Starting up, preparing to initialize DB with data");
-        scheduledExecutorService.scheduleAtFixedRate(this::fillDB, delay.toSeconds(), period.toSeconds(), TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleAtFixedRate(this::fillDB, threadsConfig.delayInSeconds().toSeconds(), threadsConfig.periodInSeconds().toSeconds(), TimeUnit.SECONDS);
     }
 
     public void fillDB() {

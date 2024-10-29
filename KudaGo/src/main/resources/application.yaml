@@ -8,8 +8,8 @@ base-config:
 
 multithreading:
   threads-num: 1
-  period-in-seconds: 5
-  delay-in-seconds: 0
+  period-in-seconds: PT5S
+  delay-in-seconds: PT0S
   max-num-of-threads: 3
 
 server:
