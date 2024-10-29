@@ -26,7 +26,7 @@ public class EventController {
 
     @Validated
     @GetMapping("/events")
-    public ResponseEntity<List<Event>> getSuitableEvents(@RequestParam @Min(value = 0, message = "Ваш бюджет должен быть неотрицательным числом")
+    public ResponseEntity<Mono<List<Event>>> getSuitableEvents(@RequestParam @Min(value = 0, message = "Ваш бюджет должен быть неотрицательным числом")
                                                          Double budget,
 
                                                          @RequestParam @NotNull(message = "Укажите валюту для конвертации")
@@ -37,6 +37,6 @@ public class EventController {
 
                                                          @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd")
                                                          LocalDate dateTo) {
-        return ResponseEntity.ok(eventService.getSuitableEvents(budget, currency, dateFrom, dateTo).block());
+        return ResponseEntity.ok(eventService.getSuitableEvents(budget, currency, dateFrom, dateTo));
     }
 }
