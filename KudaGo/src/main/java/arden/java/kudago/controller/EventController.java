@@ -3,13 +3,19 @@ package arden.java.kudago.controller;
 import arden.java.kudago.dto.response.event.EventDto;
 import arden.java.kudago.dto.response.event.SuitableEvent;
 import arden.java.kudago.dto.response.event.EventResponse;
+import arden.java.kudago.model.Event;
+import arden.java.kudago.model.specification.EventSpecification;
 import arden.java.kudago.service.EventService;
 import arden.java.kudago.service.SuitableEventService;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import net.kaczmarzyk.spring.data.jpa.domain.Between;
+import net.kaczmarzyk.spring.data.jpa.domain.Equal;
+import net.kaczmarzyk.spring.data.jpa.web.annotation.Spec;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -50,11 +56,10 @@ public class EventController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<EventDto>> getAllEventsByFilter(@RequestParam(required = false) String name,
-                                                               @RequestParam(required = false) String location,
-                                                               @RequestParam(required = false) OffsetDateTime fromDate,
-                                                               @RequestParam(required = false) OffsetDateTime toDate) {
-        return ResponseEntity.ok(eventService.getEventsByFilter(name, location, fromDate, toDate));
+    public ResponseEntity<Page<EventDto>> getAllEventsByFilter(EventSpecification eventSpecification,
+                                                               @RequestParam(defaultValue = "0") int page,
+                                                               @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(eventService.getEventsByFilter(eventSpecification, PageRequest.of(page, size)));
     }
 
     @GetMapping("/{id}")

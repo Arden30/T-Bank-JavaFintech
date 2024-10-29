@@ -1,6 +1,5 @@
 package arden.java.kudago.dto.response.event;
 
-import arden.java.kudago.model.Location;
 import lombok.Builder;
 
 import java.time.OffsetDateTime;
@@ -9,6 +8,6 @@ import java.time.OffsetDateTime;
 public record EventDto(
         String name,
         OffsetDateTime date,
-        Location location
+        Long locationId
 ) {
 }

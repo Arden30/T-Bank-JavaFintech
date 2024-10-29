@@ -20,10 +20,10 @@ public class EventRestTemplate {
 
     public Optional<List<EventResponse>> getEvents(long start, long end) {
         String url = UriComponentsBuilder.fromHttpUrl(urlConfig.kudaGoUrl() + "/events")
-                .queryParam("expand", "location")
+                .queryParam("expand", "locationDto")
                 .queryParam("actual_since", start)
                 .queryParam("actual_until", end)
-                .queryParam("fields", "id,dates,title,slug,description,site_url,price,favorites_count,location")
+                .queryParam("fields", "id,dates,title,slug,description,site_url,price,favorites_count,locationDto")
                 .toUriString();
 
         ResponseEntity<AllEvents> response = restTemplate

@@ -51,11 +51,11 @@ public class LocationServiceImpl implements LocationService {
         locationRepository.deleteById(id);
     }
 
-    private LocationDto createResponseFromLocation(Location location) {
+    public LocationDto createResponseFromLocation(Location location) {
         return new LocationDto(location.getSlug(), location.getName());
     }
 
-    private Location createLocationFromResponse(LocationDto locationDto) {
+    public Location createLocationFromResponse(LocationDto locationDto) {
         Location location = new Location();
         location.setName(locationDto.name());
         location.setSlug(locationDto.slug());

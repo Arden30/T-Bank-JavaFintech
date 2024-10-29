@@ -33,6 +33,9 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven {
+		url = uri("https://repo.kaczmarzyk.net")
+	}
 }
 
 dependencies {
@@ -44,6 +47,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-devtools")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
+	implementation("net.kaczmarzyk:specification-arg-resolver:3.1.0")
 	implementation("org.aspectj:aspectjweaver:${aspectVersion}")
 	implementation("org.aspectj:aspectjrt:${aspectVersion}")
 	implementation("com.google.guava:guava:${googleGuavaVersion}")

@@ -31,9 +31,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class LocationE2ETest {
     @Container
     private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"))
-            .withDatabaseName("test-location")
-            .withUsername("test-location")
-            .withPassword("test-location");
+            .withDatabaseName("test-locationDto")
+            .withUsername("test-locationDto")
+            .withPassword("test-locationDto");
 
     @Autowired
     private MockMvc mockMvc;

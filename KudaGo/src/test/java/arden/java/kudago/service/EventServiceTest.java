@@ -3,8 +3,12 @@ package arden.java.kudago.service;
 import arden.java.kudago.dto.response.event.EventDto;
 import arden.java.kudago.exception.IdNotFoundException;
 import arden.java.kudago.model.Event;
+import arden.java.kudago.model.Location;
 import arden.java.kudago.repository.EventRepository;
+import arden.java.kudago.repository.LocationRepository;
 import arden.java.kudago.service.impl.EventServiceImpl;
+import arden.java.kudago.service.impl.LocationServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,16 +41,29 @@ public class EventServiceTest {
     private EventRepository eventRepository;
     @InjectMocks
     private EventServiceImpl eventService;
+    @Mock
+    private LocationServiceImpl locationService;
+    @Mock
+    private LocationRepository locationRepository;
 
-    private final List<Optional<Event>> events = List.of(
-            Optional.of(new Event(1L, "Party", OffsetDateTime.parse("2024-10-23T15:30:00+01:00"), null)),
-            Optional.of(new Event(2L, "Concert", OffsetDateTime.parse("2024-10-21T15:30:00+01:00"), null))
-    );
+    @BeforeEach
+    void setUp() {
+        Location location = new Location();
+        location.setId(1L);
 
-    private final List<EventDto> eventsList = List.of(
-            new EventDto("Party", OffsetDateTime.parse("2024-10-23T15:30:00+01:00"), null),
-            new EventDto("Concert", OffsetDateTime.parse("2024-10-21T15:30:00+01:00"), null)
-    );
+        events = List.of(
+                Optional.of(new Event(1L, "Party", OffsetDateTime.parse("2024-10-23T15:30:00+01:00"), location)),
+                Optional.of(new Event(2L, "Concert", OffsetDateTime.parse("2024-10-21T15:30:00+01:00"), location))
+        );
+
+        eventsList = List.of(
+                new EventDto("Party", OffsetDateTime.parse("2024-10-23T15:30:00+01:00"), 1L),
+                new EventDto("Concert", OffsetDateTime.parse("2024-10-21T15:30:00+01:00"), 1L)
+        );
+    }
+    private List<Optional<Event>> events;
+
+    private List<EventDto> eventsList;
 
     @Test
     @DisplayName("Getting all Events: success test")
@@ -74,6 +92,7 @@ public class EventServiceTest {
     @DisplayName("Getting Event by id: success test")
     public void getEventBySlug_successTest() {
         when(eventRepository.findById(1L)).thenReturn(events.getFirst());
+        when(locationRepository.findByIdEager(anyLong())).thenReturn(Optional.of(new Location()));
 
         EventDto EventDto = eventService.getEventById(1L);
 
@@ -92,6 +111,7 @@ public class EventServiceTest {
     @DisplayName("Create new Event: success test")
     public void createEvent_successTest() {
         when(eventRepository.save(any(Event.class))).thenReturn(events.getFirst().get());
+        when(locationRepository.findByIdEager(anyLong())).thenReturn(Optional.of(new Location()));
 
         EventDto EventDto = eventService.createEvent(eventsList.getFirst());
 
@@ -103,6 +123,7 @@ public class EventServiceTest {
     public void updateEvent_successTest() {
         when(eventRepository.save(any(Event.class))).thenReturn(events.getLast().get());
         when(eventRepository.findById(1L)).thenReturn(events.getFirst());
+        when(locationRepository.findByIdEager(anyLong())).thenReturn(Optional.of(new Location()));
 
         EventDto EventDto = eventService.updateEvent(1L, eventsList.getLast());
 

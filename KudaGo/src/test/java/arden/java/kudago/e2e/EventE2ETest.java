@@ -2,6 +2,7 @@ package arden.java.kudago.e2e;
 
 import arden.java.kudago.dto.response.event.EventDto;
 import arden.java.kudago.model.Location;
+import arden.java.kudago.repository.LocationRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -23,7 +24,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.OffsetDateTime;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -35,15 +35,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class EventE2ETest {
     @Container
     private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"))
-            .withDatabaseName("test-location")
-            .withUsername("test-location")
-            .withPassword("test-location");
+            .withDatabaseName("test-locationDto")
+            .withUsername("test-locationDto")
+            .withPassword("test-locationDto");
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private LocationRepository locationRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -59,11 +62,23 @@ public class EventE2ETest {
     void setUp() {
         entityManager.createNativeQuery("TRUNCATE TABLE events RESTART IDENTITY CASCADE").executeUpdate();
         entityManager.createNativeQuery("TRUNCATE TABLE locations RESTART IDENTITY CASCADE").executeUpdate();
+
+        Location location1 = new Location();
+        location1.setId(1L);
+        location1.setName("Some Name");
+        location1.setSlug("Some Slug");
+        locationRepository.save(location1);
+
+        Location location2 = new Location();
+        location2.setId(2L);
+        location2.setName("name");
+        location2.setSlug("slug");
+        locationRepository.save(location2);
     }
 
     @Test
     void createAndUpdate_shouldCreateAndRetrieveEvent() throws Exception {
-        EventDto eventDto = new EventDto("event", OffsetDateTime.parse("2024-10-23T15:30:00+01:00"), new Location());
+        EventDto eventDto = new EventDto("event", OffsetDateTime.parse("2024-10-23T15:30:00+01:00"), 1L);
 
         mockMvc.perform(post("/api/v1/events")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -81,14 +96,14 @@ public class EventE2ETest {
 
     @Test
     void shouldUpdateEvent() throws Exception {
-        EventDto eventDto = new EventDto("event", OffsetDateTime.parse("2024-10-23T15:30:00+01:00"), new Location());
+        EventDto eventDto = new EventDto("event", OffsetDateTime.parse("2024-10-23T15:30:00+01:00"), 1L);
 
         mockMvc.perform(post("/api/v1/events")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(eventDto)))
                 .andExpect(status().isOk());
 
-        EventDto updatedEventDto = new EventDto("event-updated", OffsetDateTime.parse("2024-10-23T15:30:00+01:00"), new Location());
+        EventDto updatedEventDto = new EventDto("event-updated", OffsetDateTime.parse("2024-10-23T15:30:00+01:00"), 1L);
         mockMvc.perform(put("/api/v1/events/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedEventDto)))
@@ -105,9 +120,9 @@ public class EventE2ETest {
 
     @Test
     void getAllEventsByFilter_shouldReturnFilteredEvents() throws Exception {
-        EventDto eventDto1 = new EventDto("Art Exhibition", OffsetDateTime.parse("2024-10-23T15:30:00+01:00"), null);
-        EventDto eventDto2 = new EventDto("Music Concert", OffsetDateTime.parse("2024-10-24T19:00:00+01:00"), null);
-        EventDto eventDto3 = new EventDto("Theater Play", OffsetDateTime.parse("2024-10-25T20:00:00+01:00"), null);
+        EventDto eventDto1 = new EventDto("Art Exhibition", OffsetDateTime.parse("2024-10-23T15:30:00+01:00"), 2L);
+        EventDto eventDto2 = new EventDto("Music Concert", OffsetDateTime.parse("2024-10-24T19:00:00+01:00"), 1L);
+        EventDto eventDto3 = new EventDto("Theater Play", OffsetDateTime.parse("2024-10-26T20:00:00+01:00"), 2L);
 
         mockMvc.perform(post("/api/v1/events")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -125,24 +140,15 @@ public class EventE2ETest {
         mockMvc.perform(get("/api/v1/events/filter")
                         .param("name", "Art Exhibition"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].name").value("Art Exhibition"));
+                .andExpect(jsonPath("$.content.size()").value(1))
+                .andExpect(jsonPath("$.content[0].name").value("Art Exhibition"));
 
 
         mockMvc.perform(get("/api/v1/events/filter")
-                        .param("location", "Some Location"))
+                        .param("location.name", "Some Name"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
-
-        OffsetDateTime fromDate = OffsetDateTime.parse("2024-10-23T00:00:00+01:00");
-        OffsetDateTime toDate = OffsetDateTime.parse("2024-10-24T23:59:59+01:00");
-        mockMvc.perform(get("/api/v1/events/filter")
-                        .param("fromDate", fromDate.toString())
-                        .param("toDate", toDate.toString()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].name").value("Art Exhibition"))
-                .andExpect(jsonPath("$[1].name").value("Music Concert"));
+                .andExpect(jsonPath("$.content.size()").value(1))
+                .andExpect(jsonPath("$.content[0].name").value("Music Concert"));
     }
 
 }

@@ -5,7 +5,6 @@ import arden.java.kudago.dto.response.event.EventResponse;
 import arden.java.kudago.dto.response.event.SuitableEvent;
 import arden.java.kudago.exception.CreationObjectException;
 import arden.java.kudago.exception.IdNotFoundException;
-import arden.java.kudago.model.Location;
 import arden.java.kudago.service.EventService;
 import arden.java.kudago.service.SuitableEventService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,8 +56,8 @@ public class EventControllerTest {
     @Test
     void testGetEventsSuccess() throws Exception {
         List<EventDto> events = List.of(
-                new EventDto("Party", OffsetDateTime.now(), new Location()),
-                new EventDto("Concert", OffsetDateTime.now(), new Location())
+                new EventDto("Party", OffsetDateTime.now(), 1L),
+                new EventDto("Concert", OffsetDateTime.now(), 1L)
         );
 
         Page<EventDto> eventPage = new PageImpl<>(events, PageRequest.of(0, events.size()), events.size());
@@ -74,7 +73,7 @@ public class EventControllerTest {
 
     @Test
     void testGetEventByIdSuccess() throws Exception {
-        EventDto eventDto = new EventDto("Party", OffsetDateTime.now(), new Location());
+        EventDto eventDto = new EventDto("Party", OffsetDateTime.now(), 1L);
         when(eventService.getEventById(1L)).thenReturn(eventDto);
 
         mockMvc.perform(get("/api/v1/events/1"))
@@ -93,7 +92,7 @@ public class EventControllerTest {
 
     @Test
     void testCreateEventSuccess() throws Exception {
-        EventDto newEvent = new EventDto("Party", OffsetDateTime.now(), new Location());
+        EventDto newEvent = new EventDto("Party", OffsetDateTime.now(), 1L);
 
         when(eventService.createEvent(any(EventDto.class))).thenReturn(newEvent);
 
@@ -107,7 +106,7 @@ public class EventControllerTest {
 
     @Test
     void testCreateEventInvalidData() throws Exception {
-        EventDto invalidEventResponse = new EventDto(null, OffsetDateTime.now(), new Location());
+        EventDto invalidEventResponse = new EventDto(null, OffsetDateTime.now(), 1L);
         when(eventService.createEvent(any(EventDto.class))).thenThrow(new CreationObjectException("Can't create an object"));
 
         mockMvc.perform(post("/api/v1/events")
@@ -118,7 +117,7 @@ public class EventControllerTest {
 
     @Test
     void testUpdateEventSuccess() throws Exception {
-        EventDto updatedEvent = new EventDto("Party", OffsetDateTime.now(), new Location());
+        EventDto updatedEvent = new EventDto("Party", OffsetDateTime.now(), 1L);
 
         when(eventService.updateEvent(anyLong(), any(EventDto.class))).thenReturn(updatedEvent);
 
@@ -137,7 +136,7 @@ public class EventControllerTest {
 
         mockMvc.perform(put("/api/v1/events/999")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new EventDto("Party", OffsetDateTime.now(), new Location()))))
+                        .content(objectMapper.writeValueAsString(new EventDto("Party", OffsetDateTime.now(), 1L))))
                 .andExpect(status().isNotFound());
     }
 
@@ -162,18 +161,19 @@ public class EventControllerTest {
     @Test
     void testFilterByName() throws Exception {
         List<EventDto> events = List.of(
-                new EventDto("Party", OffsetDateTime.now(), new Location()),
-                new EventDto("Concert", OffsetDateTime.now(), new Location())
+                new EventDto("Party", OffsetDateTime.now(), 1L),
+                new EventDto("Concert", OffsetDateTime.now(), 1L)
         );
 
-        when(eventService.getEventsByFilter("Party", null, null, null)).thenReturn(List.of(events.getFirst()));
+        Page<EventDto> eventPage = new PageImpl<>(List.of(events.getFirst()), PageRequest.of(0, 1), 1);
+        when(eventService.getEventsByFilter(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(eventPage);
 
         mockMvc.perform(get("/api/v1/events/filter")
-                .param("name", "Party"))
+                        .param("name", "Party"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$[0].name").value("Party"));
+                .andExpect(jsonPath("$.content.size()").value(1))
+                .andExpect(jsonPath("$.content[0].name").value("Party"));
 
     }
 
