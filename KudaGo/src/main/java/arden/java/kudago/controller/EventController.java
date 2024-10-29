@@ -8,6 +8,8 @@ import arden.java.kudago.service.SuitableEventService;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -42,8 +44,9 @@ public class EventController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<EventDto>> getAllEvents() {
-        return ResponseEntity.ok(eventService.getAllEvents());
+    public ResponseEntity<Page<EventDto>> getAllEvents(@RequestParam(defaultValue = "0") int page,
+                                                       @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(eventService.getAllEvents(PageRequest.of(page, size)));
     }
 
     @GetMapping("/filter")

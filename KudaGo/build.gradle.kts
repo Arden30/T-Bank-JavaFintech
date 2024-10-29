@@ -38,6 +38,7 @@ repositories {
 dependencies {
 	implementation(project(":starter"))
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation("org.springframework.data:spring-data-commons")
 	runtimeOnly("org.postgresql:postgresql")
 	implementation("org.liquibase:liquibase-core")
 	implementation("org.springframework.boot:spring-boot-starter-web")

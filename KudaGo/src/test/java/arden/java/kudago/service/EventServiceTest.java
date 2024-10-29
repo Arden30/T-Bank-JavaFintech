@@ -13,6 +13,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.OffsetDateTime;
 import java.util.Collections;
@@ -47,23 +51,23 @@ public class EventServiceTest {
     @DisplayName("Getting all Events: success test")
     public void getAllEvents_successTest() {
         //Arrange
-        when(eventRepository.findAll()).thenReturn(events.stream().map(Optional::get).toList());
+        when(eventRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(events.stream().map(Optional::get).toList(), PageRequest.of(0, events.size()), events.size()));
 
         //Act
-        List<EventDto> EventDto = eventService.getAllEvents();
+        Page<EventDto> result = eventService.getAllEvents(PageRequest.of(0, eventsList.size()));
 
-        //Assert
-        assertThat(EventDto).isEqualTo(eventsList);
+        // Assert
+        assertThat(result.getContent()).isEqualTo(eventsList);
     }
 
     @Test
     @DisplayName("Getting all Events: fail test")
     public void getAllEvents_failTest() {
-        when(eventRepository.findAll()).thenReturn(Collections.emptyList());
+        when(eventRepository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
-        List<EventDto> EventDto = eventService.getAllEvents();
+        Page<EventDto> eventDtos = eventService.getAllEvents(PageRequest.of(0, eventsList.size()));
 
-        assertThat(Collections.emptyList()).isEqualTo(EventDto);
+        assertThat(Collections.emptyList()).isEqualTo(eventDtos.getContent());
     }
 
     @Test

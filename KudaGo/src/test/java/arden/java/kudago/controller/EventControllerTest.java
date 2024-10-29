@@ -13,9 +13,13 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import reactor.core.publisher.Mono;
@@ -57,13 +61,15 @@ public class EventControllerTest {
                 new EventDto("Concert", OffsetDateTime.now(), new Location())
         );
 
-        when(eventService.getAllEvents()).thenReturn(events);
+        Page<EventDto> eventPage = new PageImpl<>(events, PageRequest.of(0, events.size()), events.size());
+        when(eventService.getAllEvents(ArgumentMatchers.any())).thenReturn(eventPage);
 
-        mockMvc.perform(get("/api/v1/events/list"))
+        mockMvc.perform(get("/api/v1/events/list")
+                        .param("size", "2"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.size()").value(2))
-                .andExpect(jsonPath("$[0].name").value("Party"));
+                .andExpect(jsonPath("$.content.size()").value(2))
+                .andExpect(jsonPath("$.content[0].name").value("Party"));
     }
 
     @Test

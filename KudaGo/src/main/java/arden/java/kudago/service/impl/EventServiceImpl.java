@@ -6,7 +6,9 @@ import arden.java.kudago.model.Event;
 import arden.java.kudago.repository.EventRepository;
 import arden.java.kudago.service.EventService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -17,10 +19,9 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
 
     @Override
-    public List<EventDto> getAllEvents() {
-        return eventRepository.findAll().stream()
-                .map(this::createResponseFromEvent)
-                .toList();
+    public Page<EventDto> getAllEvents(Pageable pageable) {
+        return eventRepository.findAll(pageable)
+                .map(this::createResponseFromEvent);
     }
 
     @Override
