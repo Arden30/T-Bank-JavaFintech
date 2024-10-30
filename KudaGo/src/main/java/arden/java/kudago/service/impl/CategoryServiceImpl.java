@@ -1,13 +1,9 @@
 package arden.java.kudago.service.impl;
 
 import arden.java.kudago.dto.response.places.CategoryDto;
-import arden.java.kudago.dto.response.places.LocationDto;
-import arden.java.kudago.exception.CreationObjectException;
 import arden.java.kudago.exception.IdNotFoundException;
 import arden.java.kudago.model.Category;
-import arden.java.kudago.model.Location;
 import arden.java.kudago.repository.CategoryRepository;
-import arden.java.kudago.repository.StorageRepository;
 import arden.java.kudago.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
