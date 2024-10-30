@@ -6,7 +6,6 @@ import arden.java.kudago.config.ThreadsConfig;
 import arden.java.kudago.dto.response.places.CategoryDto;
 import arden.java.kudago.dto.response.places.LocationDto;
 import arden.java.kudago.exception.GeneralException;
-import arden.java.kudago.repository.StorageRepository;
 import arden.java.kudago.start.command.FillCategoriesCommand;
 import arden.java.kudago.start.command.FillLocationCommand;
 import arden.java.kudago.start.observer.DataStorageSubscriber;

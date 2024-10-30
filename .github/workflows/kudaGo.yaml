@@ -5,7 +5,6 @@ on:
   pull_request:
     branches:
       - main
-      - fj_2024_lesson_8
 
 jobs:
   build:
