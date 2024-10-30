@@ -113,4 +113,17 @@ public class CategoryServiceTest {
         when(storage.findById(1L)).thenReturn(categories.getFirst());
         assertDoesNotThrow(() -> categoryService.deleteCategory(categories.getFirst().get().getId()));
     }
+
+    @Test
+    @DisplayName("Category history test")
+    public void categoryHistoryTest() {
+        when(storage.save(any(Category.class))).thenReturn(categories.getFirst().get());
+        when(storage.findById(1L)).thenReturn(categories.getFirst());
+
+        CategoryDto original = categoryService.createCategory(categoriesList.getFirst());
+        CategoryDto updated = categoryService.updateCategory(1L, categoriesList.getLast());
+
+        Category orig = categoryService.restoreCategorySnapshot(1L, 1);
+        assertThat(orig.getName()).isEqualTo(categories.getFirst().get().getName());
+    }
 }

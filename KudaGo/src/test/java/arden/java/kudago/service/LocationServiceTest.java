@@ -1,7 +1,9 @@
 package arden.java.kudago.service;
 
+import arden.java.kudago.dto.response.places.CategoryDto;
 import arden.java.kudago.dto.response.places.LocationDto;
 import arden.java.kudago.exception.IdNotFoundException;
+import arden.java.kudago.model.Category;
 import arden.java.kudago.model.Location;
 import arden.java.kudago.repository.LocationRepository;
 import arden.java.kudago.service.impl.LocationServiceImpl;
@@ -112,5 +114,18 @@ public class LocationServiceTest {
     @DisplayName("Delete Location: success test")
     public void deleteLocation_successTest() {
         assertDoesNotThrow(() -> locationService.deleteLocation(locations.getFirst().get().getId()));
+    }
+
+    @Test
+    @DisplayName("Location history test")
+    public void locationHistoryTest() {
+        when(locationRepository.save(any(Location.class))).thenReturn(locations.getFirst().get());
+        when(locationRepository.findByIdEager(1L)).thenReturn(locations.getFirst());
+
+        LocationDto original = locationService.createLocation(locationsList.getFirst());
+        LocationDto updated = locationService.updateLocation(1L, locationsList.getLast());
+
+        Location orig = locationService.restoreLocationSnapshot(1L, 1);
+        assertThat(orig.getName()).isEqualTo(locations.getFirst().get().getName());
     }
 }

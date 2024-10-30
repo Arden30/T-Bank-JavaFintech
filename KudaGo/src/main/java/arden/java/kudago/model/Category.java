@@ -22,4 +22,18 @@ public class Category {
 
     @Column(nullable = false)
     private String slug;
+
+    public CategoryMemento save() {
+        return new CategoryMemento(slug, name);
+    }
+
+    public void restore(CategoryMemento memento) {
+        this.name = memento.name();
+        this.slug = memento.slug();
+    }
+
+    public record CategoryMemento(
+            String slug,
+            String name
+    ) {}
 }
