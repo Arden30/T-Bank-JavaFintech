@@ -7,6 +7,10 @@ import arden.java.kudago.dto.response.places.CategoryDto;
 import arden.java.kudago.dto.response.places.LocationDto;
 import arden.java.kudago.exception.GeneralException;
 import arden.java.kudago.repository.StorageRepository;
+import arden.java.kudago.start.command.FillCategoriesCommand;
+import arden.java.kudago.start.command.FillLocationCommand;
+import arden.java.kudago.start.observer.DataStorageSubscriber;
+import arden.java.kudago.start.observer.Publisher;
 import configuration.annotation.logtimexec.LogTimeExec;
 import jakarta.annotation.PreDestroy;
 import lombok.NonNull;
@@ -34,8 +38,8 @@ import java.util.concurrent.TimeUnit;
 public class StartupLogic implements ApplicationContextAware {
     private final CategoryRestTemplate categoryRestTemplate;
     private final LocationRestTemplate locationRestTemplate;
-    private final StorageRepository<Long, CategoryDto> categoryRepository;
-    private final StorageRepository<String, LocationDto> locationStorage;
+    private final FillCategoriesCommand fillCategoriesCommand;
+    private final FillLocationCommand fillLocationCommand;
     @Qualifier("fixedThreadPool")
     private final ExecutorService fixedThreadPool;
     @Qualifier("scheduledThreadPool")
@@ -78,7 +82,7 @@ public class StartupLogic implements ApplicationContextAware {
         Optional<List<CategoryDto>> request = categoryRestTemplate.getAllCategories();
         if (request.isPresent()) {
             List<CategoryDto> categories = request.get();
-            categories.forEach(category -> categoryRepository.create(category.id(), category));
+            fillCategoriesCommand.execute(categories);
             publisher.notifySubscribers("categories");
 
             return categories.toString();
@@ -92,7 +96,7 @@ public class StartupLogic implements ApplicationContextAware {
         Optional<List<LocationDto>> request = locationRestTemplate.getLocations();
         if (request.isPresent()) {
             List<LocationDto> locationResponse = request.get();
-            locationResponse.forEach(location -> locationStorage.create(location.slug(), location));
+            fillLocationCommand.execute(locationResponse);
             publisher.notifySubscribers("locations");
 
             return locationResponse.toString();

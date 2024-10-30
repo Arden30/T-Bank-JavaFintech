@@ -1,4 +1,4 @@
-package arden.java.kudago.start;
+package arden.java.kudago.start.observer;
 
 import org.springframework.stereotype.Component;
 
@@ -9,15 +9,15 @@ import java.util.List;
 public class Publisher {
     private final List<Subscriber> subscribers = new ArrayList<>();
 
-    void subscribe(Subscriber subscriber) {
+    public void subscribe(Subscriber subscriber) {
         subscribers.add(subscriber);
     }
 
-    void unsubscribe(Subscriber subscriber) {
+    public void unsubscribe(Subscriber subscriber) {
         subscribers.remove(subscriber);
     }
 
-    void notifySubscribers(String message) {
+    public void notifySubscribers(String message) {
         for (Subscriber subscriber : subscribers) {
             subscriber.update(message);
         }
