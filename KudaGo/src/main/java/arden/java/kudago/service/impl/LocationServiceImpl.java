@@ -2,7 +2,6 @@ package arden.java.kudago.service.impl;
 
 import arden.java.kudago.dto.response.places.LocationDto;
 import arden.java.kudago.exception.IdNotFoundException;
-import arden.java.kudago.model.Category;
 import arden.java.kudago.model.Location;
 import arden.java.kudago.repository.HistoryCaretaker;
 import arden.java.kudago.repository.LocationRepository;

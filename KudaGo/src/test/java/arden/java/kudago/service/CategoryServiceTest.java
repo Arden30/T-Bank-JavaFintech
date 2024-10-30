@@ -120,8 +120,8 @@ public class CategoryServiceTest {
         when(storage.save(any(Category.class))).thenReturn(categories.getFirst().get());
         when(storage.findById(1L)).thenReturn(categories.getFirst());
 
-        CategoryDto original = categoryService.createCategory(categoriesList.getFirst());
-        CategoryDto updated = categoryService.updateCategory(1L, categoriesList.getLast());
+        categoryService.createCategory(categoriesList.getFirst());
+        categoryService.updateCategory(1L, categoriesList.getLast());
 
         Category orig = categoryService.restoreCategorySnapshot(1L, 1);
         assertThat(orig.getName()).isEqualTo(categories.getFirst().get().getName());
