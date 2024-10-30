@@ -3,7 +3,7 @@ name: Build CustomLinkedList with tests
 on:
   pull_request:
     branches:
-      - no
+      - main
 
 
 jobs:

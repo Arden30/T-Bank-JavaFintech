@@ -25,4 +25,18 @@ public class Location {
 
     @OneToMany(mappedBy = "location", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Set<Event> events = new HashSet<>();
+
+    public LocationMemento save() {
+        return new LocationMemento(slug, name);
+    }
+
+    public void restore(LocationMemento memento) {
+        this.slug = memento.slug();
+        this.name = memento.name();
+    }
+
+    public record LocationMemento(
+            String slug,
+            String name
+    ) {}
 }

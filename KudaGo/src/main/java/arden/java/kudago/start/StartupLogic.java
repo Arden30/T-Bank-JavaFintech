@@ -6,7 +6,10 @@ import arden.java.kudago.config.ThreadsConfig;
 import arden.java.kudago.dto.response.places.CategoryDto;
 import arden.java.kudago.dto.response.places.LocationDto;
 import arden.java.kudago.exception.GeneralException;
-import arden.java.kudago.repository.StorageRepository;
+import arden.java.kudago.start.command.FillCategoriesCommand;
+import arden.java.kudago.start.command.FillLocationCommand;
+import arden.java.kudago.start.observer.DataStorageSubscriber;
+import arden.java.kudago.start.observer.Publisher;
 import configuration.annotation.logtimexec.LogTimeExec;
 import jakarta.annotation.PreDestroy;
 import lombok.NonNull;
@@ -34,14 +37,16 @@ import java.util.concurrent.TimeUnit;
 public class StartupLogic implements ApplicationContextAware {
     private final CategoryRestTemplate categoryRestTemplate;
     private final LocationRestTemplate locationRestTemplate;
-    private final StorageRepository<Long, CategoryDto> categoryRepository;
-    private final StorageRepository<String, LocationDto> locationStorage;
+    private final FillCategoriesCommand fillCategoriesCommand;
+    private final FillLocationCommand fillLocationCommand;
     @Qualifier("fixedThreadPool")
     private final ExecutorService fixedThreadPool;
     @Qualifier("scheduledThreadPool")
     private final ScheduledExecutorService scheduledExecutorService;
     private final ThreadsConfig threadsConfig;
     private ApplicationContext applicationContext;
+    private final Publisher publisher;
+    private final DataStorageSubscriber dataStorageSubscriber;
 
     @Override
     public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
@@ -51,6 +56,8 @@ public class StartupLogic implements ApplicationContextAware {
     @EventListener(ApplicationReadyEvent.class)
     public void startup() {
         log.info("Starting up, preparing to initialize DB with data");
+        publisher.subscribe(dataStorageSubscriber);
+
         scheduledExecutorService.scheduleAtFixedRate(this::fillDB, threadsConfig.delayInSeconds().toSeconds(), threadsConfig.periodInSeconds().toSeconds(), TimeUnit.SECONDS);
     }
 
@@ -74,8 +81,8 @@ public class StartupLogic implements ApplicationContextAware {
         Optional<List<CategoryDto>> request = categoryRestTemplate.getAllCategories();
         if (request.isPresent()) {
             List<CategoryDto> categories = request.get();
-            categories.forEach(category -> categoryRepository.create(category.id(), category));
-            log.info("All categories are updated and saved to DB");
+            fillCategoriesCommand.execute(categories);
+            publisher.notifySubscribers("categories");
 
             return categories.toString();
         } else {
@@ -87,11 +94,11 @@ public class StartupLogic implements ApplicationContextAware {
     public String fillDBWithLocations() {
         Optional<List<LocationDto>> request = locationRestTemplate.getLocations();
         if (request.isPresent()) {
-            List<LocationDto> locationRespons = request.get();
-            locationRespons.forEach(location -> locationStorage.create(location.slug(), location));
-            log.info("All locations are updated and saved to DB");
+            List<LocationDto> locationResponse = request.get();
+            fillLocationCommand.execute(locationResponse);
+            publisher.notifySubscribers("locations");
 
-            return locationRespons.toString();
+            return locationResponse.toString();
         } else {
             log.error("Problems with saving locations to DB");
             throw new GeneralException("No locations found");

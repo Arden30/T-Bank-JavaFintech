@@ -1,13 +1,17 @@
+import arden.java.CustomIterator;
 import arden.java.CustomLinkedList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 public class CustomLinkedListTest {
@@ -85,5 +89,50 @@ public class CustomLinkedListTest {
         assertAll("Check stream reduce",
                 () -> assertThat(customLinkedList.size()).isEqualTo(10),
                 () -> assertThat(customLinkedList.get(0)).isEqualTo(1));
+    }
+
+    @Test
+    @DisplayName("Test hasNext method of CustomIterator")
+    void testCustomIteratorHasNext() {
+        list.add(10);
+        list.add(20);
+        list.add(30);
+
+        CustomIterator<Integer> iterator = list.iterator();
+        for (int i = 0; i < 3; i++) {
+            assertThat(iterator.hasNext()).isTrue();
+            iterator.next();
+        }
+
+        assertThat(iterator.hasNext()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Test next method of CustomIterator")
+    void testCustomIteratorNext() {
+        list.add(10);
+        list.add(20);
+        list.add(30);
+
+        CustomIterator<Integer> iterator = list.iterator();
+        for (int i = 10; i < 40; i += 10) {
+            assertThat(iterator.next()).isEqualTo(i);
+        }
+
+        assertThrows(NoSuchElementException.class, iterator::next);
+    }
+
+    @Test
+    @DisplayName("Test forEachRemaining method of CustomIterator")
+    void testCustomIteratorForEachRemaining() {
+        list.add(10);
+        list.add(20);
+        list.add(30);
+
+        List<Integer> storage = new ArrayList<>();
+        CustomIterator<Integer> iterator = list.iterator();
+        iterator.forEachRemaining(storage::add);
+
+        assertThat(storage).contains(10, 20, 30);
     }
 }

@@ -7,7 +7,6 @@ import arden.java.kudago.model.Location;
 import arden.java.kudago.repository.EventRepository;
 import arden.java.kudago.repository.LocationRepository;
 import arden.java.kudago.service.impl.EventServiceImpl;
-import arden.java.kudago.service.impl.LocationServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,8 +41,6 @@ public class EventServiceTest {
     @InjectMocks
     private EventServiceImpl eventService;
     @Mock
-    private LocationServiceImpl locationService;
-    @Mock
     private LocationRepository locationRepository;
 
     @BeforeEach
@@ -61,6 +58,7 @@ public class EventServiceTest {
                 new EventDto("Concert", OffsetDateTime.parse("2024-10-21T15:30:00+01:00"), 1L)
         );
     }
+
     private List<Optional<Event>> events;
 
     private List<EventDto> eventsList;

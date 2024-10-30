@@ -16,7 +16,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -120,7 +120,7 @@ public class CategoryControllerTest {
 
     @Test
     void testDeleteCategorySuccess() throws Exception {
-        when(categoryService.deleteCategory(1L)).thenReturn(true);
+        doNothing().when(categoryService).deleteCategory(1L);
 
         mockMvc.perform(delete("/api/v1/places/categories/1"))
                 .andExpect(status().isOk())
@@ -130,7 +130,7 @@ public class CategoryControllerTest {
 
     @Test
     void testDeleteCategoryNotFound() throws Exception {
-        when(categoryService.deleteCategory(anyLong())).thenThrow(new IdNotFoundException("Category not found"));
+        doThrow(new IdNotFoundException("Category not found")).when(categoryService).deleteCategory(anyLong());
 
         mockMvc.perform(delete("/api/v1/places/categories/999"))
                 .andExpect(status().isNotFound());

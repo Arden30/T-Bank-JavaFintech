@@ -13,5 +13,5 @@ public interface CategoryService {
 
     CategoryDto updateCategory(Long id, CategoryDto categoryDto);
 
-    boolean deleteCategory(Long id);
+    void deleteCategory(Long id);
 }
