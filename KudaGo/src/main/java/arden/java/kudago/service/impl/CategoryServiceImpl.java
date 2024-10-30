@@ -1,8 +1,12 @@
 package arden.java.kudago.service.impl;
 
 import arden.java.kudago.dto.response.places.CategoryDto;
+import arden.java.kudago.dto.response.places.LocationDto;
 import arden.java.kudago.exception.CreationObjectException;
 import arden.java.kudago.exception.IdNotFoundException;
+import arden.java.kudago.model.Category;
+import arden.java.kudago.model.Location;
+import arden.java.kudago.repository.CategoryRepository;
 import arden.java.kudago.repository.StorageRepository;
 import arden.java.kudago.service.CategoryService;
 import lombok.RequiredArgsConstructor;
@@ -15,50 +19,56 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class CategoryServiceImpl implements CategoryService {
-    private final StorageRepository<Long, CategoryDto> categoryRepository;
+    private final CategoryRepository categoryRepository;
 
     @Override
     public List<CategoryDto> getAllCategories() {
-        return categoryRepository.readAll();
+        return categoryRepository.findAll().stream()
+                .map(this::createResponseFromCategory)
+                .toList();
     }
 
     @Override
     public CategoryDto getCategoryById(Long id) {
-        if (categoryRepository.read(id) == null) {
-            throw new IdNotFoundException("Category with id = " + id + " not found");
-        }
-
-        return categoryRepository.read(id);
+        return createResponseFromCategory(categoryRepository.findById(id)
+                .orElseThrow(() -> new IdNotFoundException("Category with id = " + id + " not found")));
     }
 
     @Override
     public CategoryDto createCategory(CategoryDto categoryDto) {
-        if (categoryRepository.create(categoryDto.id(), categoryDto) == null) {
-            throw new CreationObjectException("Could not create category, because your input format is wrong, check again");
-        }
-
-        return categoryRepository.create(categoryDto.id(), categoryDto);
+        return createResponseFromCategory(categoryRepository.save(createCategoryFromResponse(categoryDto)));
     }
 
     @Override
     public CategoryDto updateCategory(Long id, CategoryDto categoryDto) {
-        if (categoryRepository.read(id) == null) {
-            throw new IdNotFoundException("Category with id = " + id + " not found");
-        }
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new IdNotFoundException("Category with id = " + id + " not found"));
 
-        if (categoryRepository.update(id, categoryDto) == null) {
-            throw new CreationObjectException("Could not update category, because your input format is wrong, check again");
-        }
+        existingCategory.setName(categoryDto.name());
+        existingCategory.setSlug(categoryDto.slug());
 
-        return categoryRepository.update(id, categoryDto);
+        return createResponseFromCategory(categoryRepository.save(existingCategory));
     }
 
     @Override
-    public boolean deleteCategory(Long id) {
-        if (categoryRepository.read(id) == null || !categoryRepository.delete(id)) {
+    public void deleteCategory(Long id) {
+        if (categoryRepository.findById(id).isEmpty()) {
             throw new IdNotFoundException("Category with id = " + id + " not found");
         }
 
-        return categoryRepository.delete(id);
+        categoryRepository.deleteById(id);
+    }
+
+    public CategoryDto createResponseFromCategory(Category category) {
+        return new CategoryDto(category.getId(), category.getSlug(), category.getName());
+    }
+
+    public Category createCategoryFromResponse(CategoryDto categoryDto) {
+        Category category = new Category();
+        category.setId(category.getId());
+        category.setSlug(category.getSlug());
+        category.setName(category.getName());
+
+        return category;
     }
 }

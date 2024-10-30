@@ -42,8 +42,6 @@ public class EventServiceTest {
     @InjectMocks
     private EventServiceImpl eventService;
     @Mock
-    private LocationServiceImpl locationService;
-    @Mock
     private LocationRepository locationRepository;
 
     @BeforeEach

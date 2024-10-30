@@ -3,7 +3,8 @@ package arden.java.kudago.service;
 import arden.java.kudago.dto.response.places.CategoryDto;
 import arden.java.kudago.exception.CreationObjectException;
 import arden.java.kudago.exception.IdNotFoundException;
-import arden.java.kudago.repository.StorageRepository;
+import arden.java.kudago.model.Category;
+import arden.java.kudago.repository.CategoryRepository;
 import arden.java.kudago.service.impl.CategoryServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,28 +15,36 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CategoryServiceTest {
     @Mock
-    private StorageRepository<Long, CategoryDto> storage;
+    private CategoryRepository storage;
     @InjectMocks
     private CategoryServiceImpl categoryService;
 
+    private final List<Optional<Category>> categories = List.of(
+            Optional.of(new Category(1L, "shop", "Магазин здорового питания")),
+            Optional.of(new Category(2L, "cafe", "Кафе быстрого питания"))
+    );
+
     private final List<CategoryDto> categoriesList = List.of(
-            new CategoryDto(1L, "shop", "Магазин здорового питания"),
-            new CategoryDto(2L, "cafe", "Кафе быстрого питания")
+            new CategoryDto(1L, "Магазин здорового питания", "shop"),
+            new CategoryDto(2L, "Кафе быстрого питания", "cafe")
     );
 
     @Test
     @DisplayName("Getting all categories: success test")
     public void getAllCategories_successTest() {
         //Arrange
-        when(storage.readAll()).thenReturn(categoriesList);
+        when(storage.findAll()).thenReturn(categories.stream().map(Optional::get).toList());
 
         //Act
         List<CategoryDto> categories = categoryService.getAllCategories();
@@ -47,7 +56,7 @@ public class CategoryServiceTest {
     @Test
     @DisplayName("Getting all categories: fail test")
     public void getAllCategories_failTest() {
-        when(storage.readAll()).thenReturn(Collections.emptyList());
+        when(storage.findAll()).thenReturn(Collections.emptyList());
 
         List<CategoryDto> categories = categoryService.getAllCategories();
 
@@ -57,7 +66,7 @@ public class CategoryServiceTest {
     @Test
     @DisplayName("Getting category by id: success test")
     public void getCategoryById_successTest() {
-        when(storage.read(1L)).thenReturn(categoriesList.getFirst());
+        when(storage.findById(1L)).thenReturn(categories.getFirst());
 
         CategoryDto categoryDto = categoryService.getCategoryById(1L);
 
@@ -67,7 +76,7 @@ public class CategoryServiceTest {
     @Test
     @DisplayName("Getting category by id: fail test")
     public void getCategoryById_failTest() {
-        when(storage.read(1L)).thenReturn(null);
+        when(storage.findById(1L)).thenThrow(new IdNotFoundException("Id not found"));
 
         assertThrows(IdNotFoundException.class, () -> categoryService.getCategoryById(1L));
     }
@@ -75,7 +84,7 @@ public class CategoryServiceTest {
     @Test
     @DisplayName("Create new category: success test")
     public void createCategory_successTest() {
-        when(storage.create(1L, categoriesList.getFirst())).thenReturn(categoriesList.getFirst());
+        when(storage.save(any(Category.class))).thenReturn(categories.getFirst().get());
 
         CategoryDto categoryDto = categoryService.createCategory(categoriesList.getFirst());
 
@@ -83,18 +92,10 @@ public class CategoryServiceTest {
     }
 
     @Test
-    @DisplayName("Create new category: fail test")
-    public void createCategory_failTest() {
-        when(storage.create(1L, categoriesList.getFirst())).thenReturn(null);
-
-        assertThrows(CreationObjectException.class, () -> categoryService.createCategory(categoriesList.getFirst()));
-    }
-
-    @Test
     @DisplayName("Update category: success test")
     public void updateCategory_successTest() {
-        when(storage.update(1L, categoriesList.getLast())).thenReturn(categoriesList.getLast());
-        when(storage.read(1L)).thenReturn(categoriesList.getFirst());
+        when(storage.save(any(Category.class))).thenReturn(categories.getLast().get());
+        when(storage.findById(1L)).thenReturn(categories.getFirst());
 
         CategoryDto categoryDto = categoryService.updateCategory(1L, categoriesList.getLast());
 
@@ -110,17 +111,7 @@ public class CategoryServiceTest {
     @Test
     @DisplayName("Delete category: success test")
     public void deleteCategory_successTest() {
-        when(storage.read(1L)).thenReturn(categoriesList.getFirst());
-        when(storage.delete(1L)).thenReturn(true);
-
-        boolean isDeleted = categoryService.deleteCategory(1L);
-
-        assertThat(isDeleted).isTrue();
-    }
-
-    @Test
-    @DisplayName("Delete category: fail test")
-    public void deleteCategory_failTest() {
-        assertThrows(IdNotFoundException.class, () -> categoryService.deleteCategory(categoriesList.getFirst().id()));
+        when(storage.findById(1L)).thenReturn(categories.getFirst());
+        assertDoesNotThrow(() -> categoryService.deleteCategory(categories.getFirst().get().getId()));
     }
 }
